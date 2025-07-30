@@ -1,16 +1,19 @@
-import { Safe } from "../types";
-import { AuthenticateResponse } from "../types/responses";
-import { generateDeviceId } from "../utils/helpers";
-import { HttpWorkFlow } from "./httpworkflow";
+import { MayUndefined, Safe } from '../types';
+import { Account } from '../types/additional';
+import { AuthenticateResponse, BasicResponse, LinkResolutionResponse, UploadMediaResponse } from '../types/responses';
+import { MediaTypes } from '../types/types';
+import { decodeSession, generateDeviceId, getPublicKeyCredentials } from '../utils/helpers';
+import { HttpWorkflow } from './httpworkflow';
 
 export class AminoDorks {
+    private __accountInfo: MayUndefined<Account>;
     private readonly __deviceId: Safe<string> = generateDeviceId();
 
-    private readonly __httpWorkflow: Safe<HttpWorkFlow>;
+    private readonly __httpWorkflow: Safe<HttpWorkflow>;
 
     constructor(apiKey: Safe<string>) {
         this.apiKey = apiKey;
-        this.__httpWorkflow = new HttpWorkFlow({ NDCDEVICEID: this.__deviceId });
+        this.__httpWorkflow = new HttpWorkflow({ NDCDEVICEID: this.__deviceId });
 
     };
 
@@ -24,6 +27,33 @@ export class AminoDorks {
         process.env.API_KEY = apiKey;
     };
 
+    get accountInfo(): MayUndefined<Account> {
+        return this.__accountInfo;
+    };
+
+    private __remadePublicKey = async (userId: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: '/g/s/security/public_key',
+            body: JSON.stringify(
+                await getPublicKeyCredentials(userId)
+            )
+        });
+    };
+
+    public getLinkResolution = async (link: string): Promise<LinkResolutionResponse> => {
+        return await this.__httpWorkflow.sendGet<LinkResolutionResponse>({
+            path: `/g/s/link-resolution?q=${link.split('/')[4]}`
+        });
+    };
+
+    public uploadMedia = async (file: Safe<Buffer>, type: Safe<MediaTypes>): Promise<UploadMediaResponse> => {
+        return await this.__httpWorkflow.sendPost<UploadMediaResponse>({
+            path: '/g/s/media/upload',
+            body: JSON.stringify(file),
+            contentType: type
+        });
+    };
+
     public authenticate = async (email: Safe<string>, password: Safe<string>): Promise<AuthenticateResponse> => {
         const response = await this.__httpWorkflow.sendPost<AuthenticateResponse>({
             path: '/g/s/auth/login',
@@ -33,12 +63,94 @@ export class AminoDorks {
                 secret: `0 ${password}`,
                 deviceID: this.__deviceId,
                 clientType: 100,
-                action: "normal",
+                action: 'normal',
                 timestamp: Date.now()
             })
-        })
+        });
         this.__httpWorkflow.addAdditionalHeaders({ AUID: response.auid, NDCAUTH: `sid=${response.sid}` });
+        this.__accountInfo = response.account;
+        await this.__remadePublicKey(response.account.uid);
 
         return response;
-    }
-}
+    };
+
+    public authenticateSession = async (sessionId: Safe<string>): Promise<BasicResponse> => {
+        const sessionData = decodeSession(sessionId);
+
+        if (!sessionData) { throw new Error('Invalid session'); }
+        
+        this.__httpWorkflow.addAdditionalHeaders({ AUID: sessionData.userId, NDCAUTH: `sid=${sessionId}` });
+        return await this.__remadePublicKey(sessionData.userId);
+
+    };
+
+    public requestResetPassword = async (email: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: '/g/s/auth/request-security-validation',
+            body: JSON.stringify({
+                identity: email,
+                deviceID: this.__deviceId,
+                type: 1,
+                level: 2,
+                purpose: 'reset-password'
+            })
+        });
+    };
+
+    public requestVerifyAccount = async (email: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: '/g/s/auth/request-security-validation',
+            body: JSON.stringify({
+                identity: email,
+                deviceID: this.__deviceId,
+                type: 1
+            })
+        });
+    };
+
+    public resetPassword = async (email: Safe<string>, code: Safe<string>, newPassword: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: '/g/s/auth/reset-password',
+            body: JSON.stringify({
+                updateSecret: `0 ${newPassword}`,
+                emailValidationContext: {
+                    data: {
+                        code: code
+                    },
+                    type: 1,
+                    identity: email,
+                    level: 2,
+                    deviceID: this.__deviceId
+                },
+                phoneNumberValidationContext: null,
+                deviceID: this.__deviceId
+            })
+        });
+    };
+
+    public verifyAccount = async (email: Safe<string>, code: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: '/g/s/auth/check-security-validation',
+            body: JSON.stringify({
+                validationContext: {
+                    type: 1,
+                    identity: email,
+                    data: { code: code }
+                },
+                deviceID: this.__deviceId,
+                timestamp: Date.now()
+
+            })
+        });
+    };
+
+    public deleteAccount = async (password: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: '/g/s/account/delete-request',
+            body: JSON.stringify({
+                deviceID: this.__deviceId,
+                secret: `0 ${password}`
+            })
+        });
+    };
+};

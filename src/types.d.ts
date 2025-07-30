@@ -10,6 +10,14 @@ export interface PostRequestCfg {
     contentType?: MayUndefined<string>;
 }
 
+export interface SessionData {
+    status: Safe<number>;
+    userId: Safe<string>;
+    ipAddress: Safe<string>;
+    timestamp: Safe<number>;
+    hash: Safe<string>;
+}
+
 export interface CryptoKeys {
     PREFIX: Safe<Uint8Array>;
     DEVICE_ID_KEY: Safe<Uint8Array>;

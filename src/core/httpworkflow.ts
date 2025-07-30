@@ -1,9 +1,9 @@
-import { BASE_HEADERS, BASE_URL } from "../constants";
-import { Defined, MayUndefined, PostRequestCfg, Safe, StructuredHeaders } from "../types";
-import { BasicResponse } from "../types/responses";
-import { generateECDSA, generateHMAC } from "../utils/helpers";
+import { BASE_HEADERS, BASE_URL } from '../constants';
+import { Defined, MayUndefined, PostRequestCfg, Safe, StructuredHeaders } from '../types';
+import { BasicResponse } from '../types/responses';
+import { generateECDSA, generateHMAC } from '../utils/helpers';
 
-export class HttpWorkFlow {
+export class HttpWorkflow {
     private __localHeaders: Defined<StructuredHeaders> = BASE_HEADERS;
 
     constructor(additionalHeaders?: MayUndefined<StructuredHeaders>) {

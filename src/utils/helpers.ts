@@ -1,7 +1,32 @@
 import { randomBytes, createHash, createHmac } from 'crypto';
 
 import { CRYPTO_KEYS, GENERATORS_URL } from '../constants';
-import { Safe } from '../types';
+import { MayNull, Safe, SessionData } from '../types';
+
+export const decodeSession = (session: Safe<string>): MayNull<SessionData> => {
+    let base64Str = session.replace(/[-+]/g, (m) => m === '-' ? '+' : '-');
+    base64Str = base64Str.replace(/[_/]/g, (m) => m === '_' ? '/' : '_');
+    base64Str = base64Str.padEnd(base64Str.length + (-base64Str.length % 4), '=');
+
+    const decoded = Buffer.from(base64Str, 'base64');
+
+    const jsonString = decoded.subarray(1, decoded.length - 20).toString('utf-8');
+
+    try {
+        const parsedString = JSON.parse(jsonString);
+
+        return {
+            status: parsedString['0'],
+            userId: parsedString['2'],
+            ipAddress: parsedString['4'],
+            timestamp: parsedString['5'],
+            hash: parsedString['7']
+        }
+    } catch (error) {
+        console.error('Error parsing JSON:', error);
+        return null;
+    }
+}
 
 export const generateDeviceId = () => {
     const sha1Hash = Uint8Array.from(
@@ -30,7 +55,6 @@ export const generateHMAC = async (body: Safe<string>) => {
         },
         body: JSON.stringify({ payload: body })
     });
-    console.log(JSON.stringify({ payload: body }))
 
     return (await response.json()).hmac;
 };
@@ -47,14 +71,18 @@ export const generateECDSA = async (body: Safe<string>, userId: Safe<string>) =>
         body: JSON.stringify({ payload: body, userId: userId })
     });
 
-    return (await response.json()).ecdsa;
+    return (await response.json()).ECDSA;
 }
 
 export const getPublicKeyCredentials = async (userId: Safe<string>) => {
     if (!process.env.API_KEY) { throw new Error('API_KEY is not defined'); }
 
     const response = await fetch(`${GENERATORS_URL}/api/v1/signature/credentials/${userId}`, {
-        method: 'GET'
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': process.env.API_KEY
+        },
     });
 
     return (await response.json()).credentials;

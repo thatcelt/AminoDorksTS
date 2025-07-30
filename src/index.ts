@@ -1,3 +1,3 @@
-import { AminoDorks } from "./core/aminodorks";
+import { AminoDorks } from './core/aminodorks';
 
-export { AminoDorks };
+exports = { AminoDorks };

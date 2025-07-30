@@ -35,7 +35,7 @@ To get started with AminoDorksTS, follow these steps:
 
 To use AminoDorksTS, create an instance of the `AminoDorks` class and call its methods:
 ```typescript
-import { AminoDorks } from './core/aminodorks';
+import { AminoDorks } from 'aminodorks';
 
 const aminoDorks = new AminoDorks('your_api_key_here');
 const response = await aminoDorks.authenticate('email@example.com', 'password');
