@@ -53,10 +53,10 @@ export namespace GlobalResponses {
 
     export interface GetWalletInfoResponse extends BasicResponse {
         wallet: Wallet;
-    }
+    };
 
     export interface GetWalletHistoryResponse extends BasicResponse {
         coinHistoryList: TransactionData[]
-    }
+    };
 
-}
+};

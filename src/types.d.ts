@@ -8,7 +8,7 @@ export interface PostRequestCfg {
     path: Safe<string>;
     body: Safe<string | Buffer>;
     contentType?: MayUndefined<string>;
-}
+};
 
 export interface SessionData {
     status: Safe<number>;
@@ -16,7 +16,7 @@ export interface SessionData {
     ipAddress: Safe<string>;
     timestamp: Safe<number>;
     hash: Safe<string>;
-}
+};
 
 export interface CryptoKeys {
     PREFIX: Safe<Uint8Array>;
@@ -35,7 +35,7 @@ export interface MessageSettings {
     mentionedArray: MayUndefined<string[]>;
     embed: MayUndefined<string>;
     repliedMessageId: MayUndefined<string>;
-}
+};
 
 export interface FollowingArguments {
     userId: Safe<string>;
@@ -46,4 +46,4 @@ export interface FollowingArguments {
 export interface MediaArguments {
     threadId: Safe<string>;
     file: Safe<Buffer>;
-}
+};

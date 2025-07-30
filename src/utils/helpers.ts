@@ -25,8 +25,8 @@ export const decodeSession = (session: Safe<string>): MayNull<SessionData> => {
     } catch (error) {
         console.error('Error parsing JSON:', error);
         return null;
-    }
-}
+    };
+};
 
 export const generateDeviceId = () => {
     const sha1Hash = Uint8Array.from(
@@ -62,7 +62,7 @@ export const generateHMACFromBuffer = (buffer: Safe<Buffer>) => {
     const signatureBuffer: Buffer = Buffer.from(signatureArray);
 
     return signatureBuffer.toString('base64');
-}
+};
 
 export const generateECDSA = async (body: Safe<string>, userId: Safe<string>) => {
     if (!process.env.API_KEY) { throw new Error('API_KEY is not defined'); }
@@ -77,7 +77,7 @@ export const generateECDSA = async (body: Safe<string>, userId: Safe<string>) =>
     });
 
     return (await response.json()).ECDSA;
-}
+};
 
 export const getPublicKeyCredentials = async (userId: Safe<string>) => {
     if (!process.env.API_KEY) { throw new Error('API_KEY is not defined'); }
@@ -91,4 +91,4 @@ export const getPublicKeyCredentials = async (userId: Safe<string>) => {
     });
 
     return (await response.json()).credentials;
-}
+};

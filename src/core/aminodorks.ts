@@ -166,6 +166,33 @@ export class AminoDorks {
         });
     };
 
+    public joinCommunity = async (ndcId: Safe<number>, invitationId: MayUndefined<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${ndcId}/s/community/join`,
+            body: JSON.stringify({
+                timestamp: Date.now(),
+                invitationId: invitationId
+            })
+        });
+    };
+
+    public leaveCommunity = async (ndcId: Safe<number>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${ndcId}/s/community/leave`,
+            body: JSON.stringify({})
+        });
+    };
+
+    public membershipRequest = async (ndcId: Safe<number>, message: MayUndefined<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${ndcId}/s/community/membership-request`,
+            body: JSON.stringify({
+                message: message,
+                timestamp: Date.now()
+            })
+        });
+    };
+
     public changeAminoId = async (aminoId: Safe<string>): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
             path: '/g/s/account/change-amino-id',

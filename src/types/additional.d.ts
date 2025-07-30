@@ -80,14 +80,14 @@ export interface Topic {
     topicId: number;
     style: object;
     name: string;
-}
+};
 
 export interface ThemePack {
     themeColor: string;
     themePackHash: string;
     themePackRevision: number;
     themePackUrl: string;
-}
+};
 
 export interface Community {
   userAddedTopicList: null | Topic[];
@@ -125,7 +125,7 @@ export interface Wallet {
     businessCoinsEnabled: boolean;
     totalBusinessCoins: number;
     totalBusinessCoinsFloat: number;
-}
+};
 
 export interface TransactionData {
   bonusCoins?: number;
@@ -149,4 +149,4 @@ export interface TransactionData {
   totalCoins: number;
   totalCoinsFloat: number;
   uid: string;
-}
+};
