@@ -1,5 +1,3 @@
-Here is a basic README.md for your project:
-
 # AminoDorksTS
 ================
 
