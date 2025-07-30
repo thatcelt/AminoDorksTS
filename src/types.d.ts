@@ -6,7 +6,7 @@ export type StructuredHeaders = Record<string, string>;
 
 export interface PostRequestCfg {
     path: Safe<string>;
-    body: Safe<string>;
+    body: Safe<string | Buffer>;
     contentType?: MayUndefined<string>;
 }
 
@@ -20,6 +20,7 @@ export interface SessionData {
 
 export interface CryptoKeys {
     PREFIX: Safe<Uint8Array>;
+    SIGNATURE_KEY: Safe<Uint8Array>;
     DEVICE_ID_KEY: Safe<Uint8Array>;
     DEVICE_LENGTH: Safe<number>;
 };

@@ -1,7 +1,7 @@
 import { BASE_HEADERS, BASE_URL } from '../constants';
 import { Defined, MayUndefined, PostRequestCfg, Safe, StructuredHeaders } from '../types';
 import { BasicResponse } from '../types/responses';
-import { generateECDSA, generateHMAC } from '../utils/helpers';
+import { generateECDSA, generateHMAC, generateHMACFromBuffer } from '../utils/helpers';
 
 export class HttpWorkflow {
     private __localHeaders: Defined<StructuredHeaders> = BASE_HEADERS;
@@ -12,12 +12,12 @@ export class HttpWorkflow {
 
     public addAdditionalHeaders = (additionalHeaders: Safe<StructuredHeaders>) => this.__localHeaders = { ...this.__localHeaders, ...additionalHeaders };
 
-    private __configureHeaders = async (body: Safe<string>, contentType: MayUndefined<string>): Promise<Defined<StructuredHeaders>> => {
+    private __configureHeaders = async (body: Safe<string | Buffer>, contentType: MayUndefined<string>): Promise<Defined<StructuredHeaders>> => {
         const configuredHeaders = structuredClone(this.__localHeaders);
 
         configuredHeaders['Content-Length'] = body.length.toString();
-        configuredHeaders['NDC-MSG-SIG'] = await generateHMAC(body);
-        if (this.__localHeaders['AUID']) configuredHeaders['NDC-MESSAGE-SIGNATURE'] = await generateECDSA(body, configuredHeaders['AUID']);
+        configuredHeaders['NDC-MSG-SIG'] = typeof body === 'string' ? generateHMAC(body) : generateHMACFromBuffer(body);
+        if (this.__localHeaders['AUID'] && typeof body === 'string') configuredHeaders['NDC-MESSAGE-SIGNATURE'] = await generateECDSA(body, configuredHeaders['AUID']);
         if (contentType) configuredHeaders['Content-Type'] = contentType;
 
         return configuredHeaders;

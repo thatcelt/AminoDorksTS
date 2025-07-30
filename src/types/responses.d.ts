@@ -1,4 +1,4 @@
-import { Account, UserProfile } from './additional';
+import { Account, Community, TransactionData, UserInfoInCommunity, UserProfile, Wallet } from './additional';
 
 export interface BasicResponse {
     ['api:statuscode']: number;
@@ -7,30 +7,56 @@ export interface BasicResponse {
     ['api:timestamp']: string;
 };
 
-export interface AuthenticateResponse extends BasicResponse {
-    auid: string;
-    account: Account;
-    secret: string;
-    sid: string;
-    userProfile: UserProfile;
-};
+export namespace GlobalResponses {
+    export interface AuthenticateResponse extends BasicResponse {
+        auid: string;
+        account: Account;
+        secret: string;
+        sid: string;
+        userProfile: UserProfile;
+    };
 
-export interface LinkResolutionResponse extends BasicResponse {
-    linkInfoV2: {
-        path: string;
-        extensions: {
-            linkInfo: {
-                objectId?: string;
-                targetCode: number;
-                ndcId: number;
-                fullPath: string;
-                shortCode: string;
-                objectIdType: number;
+    export interface LinkResolutionResponse extends BasicResponse {
+        linkInfoV2: {
+            path: string;
+            extensions: {
+                linkInfo: {
+                    objectId?: string;
+                    targetCode: number;
+                    ndcId: number;
+                    fullPath: string;
+                    shortCode: string;
+                    objectIdType: number;
+                };
             };
         };
     };
-};
 
-export interface UploadMediaResponse extends BasicResponse {
-    mediaValue: string;
-};
+    export interface UploadMediaResponse extends BasicResponse {
+        mediaValue: string;
+    };
+
+    export interface GetCommunitiesResponse extends BasicResponse {
+        communityList: Community[];
+        userInfoInCommunities: Record<number, UserInfoInCommunity>
+    };
+
+    export interface SearchCommunityResponse extends BasicResponse {
+        resultList: {
+            objectType: number;
+            refObject: Community;
+            aminoId: string;
+            objectId: string;
+            ndcId: number;
+        }[];
+    };
+
+    export interface GetWalletInfoResponse extends BasicResponse {
+        wallet: Wallet;
+    }
+
+    export interface GetWalletHistoryResponse extends BasicResponse {
+        coinHistoryList: TransactionData[]
+    }
+
+}

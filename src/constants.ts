@@ -15,6 +15,7 @@ export const BASE_HEADERS: Defined<StructuredHeaders> = {
 
 export const CRYPTO_KEYS: Safe<CryptoKeys> = {
     PREFIX: Uint8Array.from(Buffer.from('52', 'hex')),
+    SIGNATURE_KEY: Uint8Array.from(Buffer.from('EAB4F1B9E3340CD1631EDE3B587CC3EBEDF1AFA9', 'hex')),
     DEVICE_ID_KEY: Uint8Array.from(Buffer.from('AE49550458D8E7C51D566916B04888BFB8B3CA7D', 'hex')),
     DEVICE_LENGTH: 20
 };

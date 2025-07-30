@@ -1,6 +1,6 @@
 import { MayUndefined, Safe } from '../types';
 import { Account } from '../types/additional';
-import { AuthenticateResponse, BasicResponse, LinkResolutionResponse, UploadMediaResponse } from '../types/responses';
+import { GlobalResponses, BasicResponse } from '../types/responses';
 import { MediaTypes } from '../types/types';
 import { decodeSession, generateDeviceId, getPublicKeyCredentials } from '../utils/helpers';
 import { HttpWorkflow } from './httpworkflow';
@@ -40,22 +40,22 @@ export class AminoDorks {
         });
     };
 
-    public getLinkResolution = async (link: string): Promise<LinkResolutionResponse> => {
-        return await this.__httpWorkflow.sendGet<LinkResolutionResponse>({
+    public getLinkResolution = async (link: string): Promise<GlobalResponses.LinkResolutionResponse> => {
+        return await this.__httpWorkflow.sendGet<GlobalResponses.LinkResolutionResponse>({
             path: `/g/s/link-resolution?q=${link.split('/')[4]}`
         });
     };
 
-    public uploadMedia = async (file: Safe<Buffer>, type: Safe<MediaTypes>): Promise<UploadMediaResponse> => {
-        return await this.__httpWorkflow.sendPost<UploadMediaResponse>({
+    public uploadMedia = async (file: Safe<Buffer>, type: Safe<MediaTypes>): Promise<GlobalResponses.UploadMediaResponse> => {
+        return await this.__httpWorkflow.sendPost<GlobalResponses.UploadMediaResponse>({
             path: '/g/s/media/upload',
-            body: JSON.stringify(file),
+            body: file,
             contentType: type
         });
     };
 
-    public authenticate = async (email: Safe<string>, password: Safe<string>): Promise<AuthenticateResponse> => {
-        const response = await this.__httpWorkflow.sendPost<AuthenticateResponse>({
+    public authenticate = async (email: Safe<string>, password: Safe<string>): Promise<GlobalResponses.AuthenticateResponse> => {
+        const response = await this.__httpWorkflow.sendPost<GlobalResponses.AuthenticateResponse>({
             path: '/g/s/auth/login',
             body: JSON.stringify({
                 email: email,
@@ -153,4 +153,38 @@ export class AminoDorks {
             })
         });
     };
+
+    public getCommunities = async (start: Safe<number> = 0, size: Safe<number> = 25): Promise<GlobalResponses.GetCommunitiesResponse> => {
+        return await this.__httpWorkflow.sendGet<GlobalResponses.GetCommunitiesResponse>({
+            path: `/g/s/community/joined?v=1&start=${start}&size=${size}`
+        });
+    };
+
+    public searchCommunity = async (title: Safe<string>): Promise<GlobalResponses.SearchCommunityResponse> => {
+        return await this.__httpWorkflow.sendGet<GlobalResponses.SearchCommunityResponse>({
+            path: `/g/s/search/amino-id-and-link?q=${title}`
+        });
+    };
+
+    public changeAminoId = async (aminoId: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: '/g/s/account/change-amino-id',
+            body: JSON.stringify({
+                aminoId: aminoId,
+                timestamp: Date.now()
+            })
+        });
+    };
+
+    public getWalletInfo = async (): Promise<GlobalResponses.GetWalletInfoResponse> => {
+        return await this.__httpWorkflow.sendGet<GlobalResponses.GetWalletInfoResponse>({
+            path: '/g/s/wallet'
+        });
+    };
+
+    public getWalletHistory = async (start: Safe<number> = 0, size: Safe<number> = 25): Promise<GlobalResponses.GetWalletHistoryResponse> => {
+        return await this.__httpWorkflow.sendGet<GlobalResponses.GetWalletHistoryResponse>({
+            path: `/g/s/wallet/coin/history?start=${start}&size=${size}`
+        });
+    }
 };

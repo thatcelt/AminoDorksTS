@@ -44,20 +44,25 @@ export const generateDeviceId = () => {
     return (data.toString('hex') + hmacHash).toUpperCase();
 };
 
-export const generateHMAC = async (body: Safe<string>) => {
-    if (!process.env.API_KEY) { throw new Error('API_KEY is not defined'); }
+export const generateHMAC = (body: Safe<string>) => {
+    const hmac = createHmac('sha1', CRYPTO_KEYS.SIGNATURE_KEY);
+    hmac.update(Uint8Array.from(Buffer.from(body, 'utf-8')));
+    const digest = hmac.digest();
+    const signatureArray: number[] = [CRYPTO_KEYS.PREFIX[0], ...Array.from(digest)];
+    const signatureBuffer: Buffer = Buffer.from(signatureArray);
 
-    const response = await fetch(`${GENERATORS_URL}/api/v1/signature/hmac`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': process.env.API_KEY
-        },
-        body: JSON.stringify({ payload: body })
-    });
-
-    return (await response.json()).hmac;
+    return signatureBuffer.toString('base64');
 };
+
+export const generateHMACFromBuffer = (buffer: Safe<Buffer>) => {
+    const hmac = createHmac('sha1', CRYPTO_KEYS.SIGNATURE_KEY);
+    hmac.update(Uint8Array.from(buffer));
+    const digest = hmac.digest();
+    const signatureArray: number[] = [CRYPTO_KEYS.PREFIX[0], ...Array.from(digest)];
+    const signatureBuffer: Buffer = Buffer.from(signatureArray);
+
+    return signatureBuffer.toString('base64');
+}
 
 export const generateECDSA = async (body: Safe<string>, userId: Safe<string>) => {
     if (!process.env.API_KEY) { throw new Error('API_KEY is not defined'); }

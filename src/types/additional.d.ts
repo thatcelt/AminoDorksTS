@@ -27,7 +27,7 @@ export interface UserProfile {
     createdTime: string;
     storiesCount: number;
     blogsCount: number;
-}
+};
 
 export interface Account {
     username: string | null;
@@ -58,4 +58,95 @@ export interface Account {
         mediaLabAdsMigrationAugust2020: boolean;
     };
     email: string;
+};
+
+export interface Agent {
+    status?: number;
+    isNicknameVerified: boolean;
+    uid: string;
+    level: number;
+    followingStatus: number;
+    accountMembershipStatus: number;
+    isGlobal: boolean;
+    membershipStatus: number;
+    reputation: number;
+    ndcId?: number;
+    membersCount: number;
+    nickname?: string;
+    icon?: string;
+};
+
+export interface Topic {
+    topicId: number;
+    style: object;
+    name: string;
+}
+
+export interface ThemePack {
+    themeColor: string;
+    themePackHash: string;
+    themePackRevision: number;
+    themePackUrl: string;
+}
+
+export interface Community {
+  userAddedTopicList: null | Topic[];
+  agent?: Agent;
+  listedStatus: number;
+  probationStatus: number;
+  membersCount: number;
+  primaryLanguage: string;
+  communityHeat: number;
+  strategyInfo: string;
+  tagline: string;
+  joinType: number;
+  status: number;
+  themePack: ThemePack;
+  modifiedTime: string;
+  ndcId: number;
+  link: string;
+  icon: string;
+  updatedTime: string;
+  endpoint: string;
+  name: string;
+  templateId: number;
+  createdTime: string;
+};
+
+export interface UserInfoInCommunity {
+    userProfile: UserProfile;
+};
+
+export interface Wallet {
+    totalCoinsFloat: number;
+    adsEnabled: boolean;
+    adsFlags: number;
+    totalCoins: number;
+    businessCoinsEnabled: boolean;
+    totalBusinessCoins: number;
+    totalBusinessCoinsFloat: number;
+}
+
+export interface TransactionData {
+  bonusCoins?: number;
+  bonusCoinsFloat?: number;
+  changedCoins: number;
+  changedCoinsFloat: number;
+  createdTime: string;
+  extData: {
+    description: string;
+    icon: string;
+    objectDeeplinkUrl?: string;
+    otherHumanUid?: string;
+    subtitle?: string;
+  };
+  isPositive: boolean;
+  originCoins: number;
+  originCoinsFloat: number;
+  sourceType: number;
+  taxCoins: number | null;
+  taxCoinsFloat: number | null;
+  totalCoins: number;
+  totalCoinsFloat: number;
+  uid: string;
 }
