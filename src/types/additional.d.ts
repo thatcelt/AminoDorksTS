@@ -1,3 +1,12 @@
+export interface LinkInfo {
+    objectId?: string;
+    targetCode: number;
+    ndcId: number;
+    fullPath: string;
+    shortCode: string;
+    objectIdType: number;
+};
+
 export interface UserProfile {
     status: number;
     itemsCount: number;
@@ -150,3 +159,15 @@ export interface TransactionData {
   totalCoinsFloat: number;
   uid: string;
 };
+
+export interface InviteCode {
+    status: number;
+    duration: number;
+    invitationId: string;
+    link: string;
+    modifiedTime: string;
+    ndcId: number;
+    createdTime: string;
+    inviteCode: string;
+    author: UserProfile;
+}

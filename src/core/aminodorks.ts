@@ -1,13 +1,15 @@
 import { MayUndefined, Safe } from '../types';
-import { Account } from '../types/additional';
+import { Account, LinkInfo } from '../types/additional';
 import { GlobalResponses, BasicResponse } from '../types/responses';
 import { MediaTypes } from '../types/types';
 import { decodeSession, generateDeviceId, getPublicKeyCredentials } from '../utils/helpers';
+import { AminoDorksNDC } from './communityClient';
 import { HttpWorkflow } from './httpworkflow';
 
 export class AminoDorks {
-    private __accountInfo: MayUndefined<Account>;
     private readonly __deviceId: Safe<string> = generateDeviceId();
+    private __accountInfo: MayUndefined<Account>;
+    public __aminodorksNDC: AminoDorksNDC | undefined;
 
     private readonly __httpWorkflow: Safe<HttpWorkflow>;
 
@@ -31,6 +33,12 @@ export class AminoDorks {
         return this.__accountInfo;
     };
 
+    get aminodorksNDC(): Readonly<AminoDorksNDC> {
+        if (!this.__aminodorksNDC) { throw new Error('AminoDorksNDC is not defined'); }
+
+        return this.__aminodorksNDC;
+    };
+
     private __remadePublicKey = async (userId: Safe<string>): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
             path: '/g/s/security/public_key',
@@ -40,10 +48,18 @@ export class AminoDorks {
         });
     };
 
-    public getLinkResolution = async (link: string): Promise<GlobalResponses.LinkResolutionResponse> => {
-        return await this.__httpWorkflow.sendGet<GlobalResponses.LinkResolutionResponse>({
+    public setNdcId = (ndcId: Safe<number>): Readonly<AminoDorksNDC> => {
+        if (!this.__accountInfo) { throw new Error('Account info is not defined'); }
+
+        this.__aminodorksNDC = new AminoDorksNDC(this.__httpWorkflow, this.__accountInfo, ndcId);
+
+        return this.__aminodorksNDC;
+    }
+
+    public getLinkResolution = async (link: string): Promise<LinkInfo> => {
+        return (await this.__httpWorkflow.sendGet<GlobalResponses.LinkResolutionResponse>({
             path: `/g/s/link-resolution?q=${link.split('/')[4]}`
-        });
+        })).linkInfoV2.extensions.linkInfo;
     };
 
     public uploadMedia = async (file: Safe<Buffer>, type: Safe<MediaTypes>): Promise<GlobalResponses.UploadMediaResponse> => {

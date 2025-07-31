@@ -32,6 +32,15 @@ export class HttpWorkflow {
         return (await response.json()) as T;
     };
 
+    public sendDelete = async <T extends BasicResponse>(config: Pick<PostRequestCfg, 'path'>) => {
+        const response = await fetch(`${BASE_URL}${config.path}`, {
+            method: 'DELETE',
+            headers: this.__localHeaders
+        });
+
+        return (await response.json()) as T;
+    }
+
     public sendPost = async <T extends BasicResponse>(config: PostRequestCfg) => {
         const response = await fetch(`${BASE_URL}${config.path}`, {
             method: 'POST',

@@ -1,4 +1,4 @@
-import { Account, Community, TransactionData, UserInfoInCommunity, UserProfile, Wallet } from './additional';
+import { Account, Community, InviteCode, TransactionData, UserInfoInCommunity, UserProfile, Wallet } from './additional';
 
 export interface BasicResponse {
     ['api:statuscode']: number;
@@ -20,14 +20,7 @@ export namespace GlobalResponses {
         linkInfoV2: {
             path: string;
             extensions: {
-                linkInfo: {
-                    objectId?: string;
-                    targetCode: number;
-                    ndcId: number;
-                    fullPath: string;
-                    shortCode: string;
-                    objectIdType: number;
-                };
+                linkInfo: LinkInfo;
             };
         };
     };
@@ -59,4 +52,14 @@ export namespace GlobalResponses {
         coinHistoryList: TransactionData[]
     };
 
+};
+
+export namespace NDCResponses {
+    export interface GetInviteCodesResponse extends BasicResponse {
+        communityInvitationList: InviteCode[];
+    }
+
+    export interface CreateInviteCodeResponse extends BasicResponse {
+        communityInvitation: InviteCode;
+    }
 };

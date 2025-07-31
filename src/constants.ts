@@ -19,3 +19,5 @@ export const CRYPTO_KEYS: Safe<CryptoKeys> = {
     DEVICE_ID_KEY: Uint8Array.from(Buffer.from('AE49550458D8E7C51D566916B04888BFB8B3CA7D', 'hex')),
     DEVICE_LENGTH: 20
 };
+
+export const INVITE_CODE_DEFAULT_DURATION = 259200;
