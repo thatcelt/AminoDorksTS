@@ -239,4 +239,48 @@ export interface LotteryLog {
     awardType: number;
     refObject: null;
     objectType: null;
-}
+};
+
+interface ChatThread {
+  uid: string;
+  membersQuota: number;
+  membersSummary: {uid: string, role: number, nickname: string, icon: string}[];
+  threadId: string;
+  keywords: null | string;
+  membersCount: number;
+  strategyInfo: string;
+  title: string;
+  membershipStatus: number;
+  content: null | string;
+  needHidden: boolean;
+  alertOption: number;
+  lastReadTime: null | string;
+  type: number;
+  status: number;
+  publishToGlobal: number;
+  modifiedTime: null | string;
+  lastMessageSummary: {
+    includedSummary: boolean;
+    uid: string;
+    isHidden: boolean;
+    mediaType: number;
+    content?: string;
+    threadId: string;
+    createdTime: string;
+    type: number;
+  };
+  condition: number;
+  icon: string;
+  latestActivityTime: string;
+  author: UserProfile;
+  extensions: {
+    fansOnly: boolean;
+    lastMembersSummaryUpdateTime: number;
+    vvChatJoinType: number;
+    visibility: number;
+    language: string;
+  };
+  ndcId: number;
+  createdTime: null | string;
+};
+

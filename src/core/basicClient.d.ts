@@ -1,6 +1,5 @@
-import { ChatThreadSettings, FollowingArguments, MayUndefined } from '../types';
 import { BasicResponse } from '../types/responses';
-import { CommentsSorting, MembersType, MessageTypes, PostTypes } from '../types/types';
+import { CommentsSorting, FollowingArguments, MediaArguments, MembersType, MessageSettings, MessageTypes, PostTypes } from '../types/types';
 
 export interface BasicClient {
     getUserInfo(userId: Safe<string>): Promise<BasicResponse>;

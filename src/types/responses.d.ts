@@ -1,4 +1,4 @@
-import { Account, Blog, Community, InviteCode, Item, LotteryLog, TransactionData, UserInfoInCommunity, UserProfile, Wallet } from './additional';
+import { Account, Blog, ChatThread, Community, InviteCode, Item, LotteryLog, TransactionData, UserInfoInCommunity, UserProfile, Wallet } from './additional';
 
 export interface BasicResponse {
     ['api:statuscode']: number;
@@ -72,10 +72,22 @@ export namespace NDCResponses {
 
     export interface CreateWikiResponse extends BasicResponse {
         item: Item;
-    }
+    };
 
     export interface PlayLotteryResponse extends BasicResponse {
         lotteryLog: LotteryLog;
         wallet: Wallet;
+    };
+
+    export interface GetBlogsResponse extends BasicResponse {
+        blogList: Blog[];
+    };
+
+    export interface GetWikiResponse extends BasicResponse {
+        itemList: Item[];
+    };
+
+    export interface GetChatThreadsResponse extends BasicResponse {
+        threadList: ChatThread[];
     };
 };
