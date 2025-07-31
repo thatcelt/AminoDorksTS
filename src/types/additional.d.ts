@@ -284,3 +284,17 @@ interface ChatThread {
   createdTime: null | string;
 };
 
+export interface Message {
+  includedInSummary: boolean;
+  uid: string;
+  author: UserProfile;
+  isHiddden: boolean;
+  messageId: string;
+  mediaType: number;
+  content?: string;
+  clientRefId: number;
+  threadId: string;
+  createdTime: string;
+  type: number;
+  mediaValue: string;
+}

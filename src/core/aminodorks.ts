@@ -82,6 +82,8 @@ export class AminoDorks {
                 timestamp: Date.now()
             })
         });
+        if (response.sid == undefined) { throw new Error(`Authentication failed: ${response['api:message']}`); }
+
         this.__httpWorkflow.addAdditionalHeaders({ AUID: response.auid, NDCAUTH: `sid=${response.sid}` });
         this.__accountInfo = response.account;
         await this.__remadePublicKey(response.account.uid);

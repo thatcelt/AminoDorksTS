@@ -1,3 +1,4 @@
+import { Message } from 'frida';
 import { Account, Blog, ChatThread, Community, InviteCode, Item, LotteryLog, TransactionData, UserInfoInCommunity, UserProfile, Wallet } from './additional';
 
 export interface BasicResponse {
@@ -5,6 +6,32 @@ export interface BasicResponse {
     ['api:duration']: string;
     ['api:message']: string;
     ['api:timestamp']: string;
+};
+
+export namespace ImplementaryResponses {
+    export interface GetUserInfoResponse extends BasicResponse {
+        userProfile: UserProfile;
+    }
+
+    export interface GetChatThreadsResponse extends BasicResponse {
+        threadList: ChatThread[];
+    };
+
+    export interface GetChatThreadRespones extends BasicResponse {
+        thread: ChatThread;
+    }
+
+    export interface GetChatThreadUsersResponse extends BasicResponse {
+        memberList: UserProfile[];
+    }
+
+    export interface GetChatThreadMessagesResponse extends BasicResponse {
+        messageList: Message[];
+        paging: {
+            nextPageToken: string;
+            prevPageToken: string;
+        };
+    };
 };
 
 export namespace GlobalResponses {
@@ -87,7 +114,7 @@ export namespace NDCResponses {
         itemList: Item[];
     };
 
-    export interface GetChatThreadsResponse extends BasicResponse {
-        threadList: ChatThread[];
-    };
+    export interface GetOnlineUsersResponse extends GetUserProfilesResponse {
+        userProfileCount: number;
+    }
 };

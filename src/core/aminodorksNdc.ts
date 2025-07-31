@@ -1,11 +1,13 @@
 import { GLOBAL_TIMEZONE, INVITE_CODE_DEFAULT_DURATION, SIGNATURE_STUB } from '../constants';
 import { Safe } from '../types';
 import { Account, InviteCode } from '../types/additional';
-import { BasicResponse, NDCResponses } from '../types/responses';
-import { BlogBuilder, ChatThreadTypes, OnlineStatus, PostTypes, Strikes, Timer, WikiBuilder } from '../types/types';
+import { BasicResponse, ImplementaryResponses, NDCResponses } from '../types/responses';
+import { AllowRejoin, BlogBuilder, ChatThreadSettings, FollowingArguments, OnlineStatus, Timer, WikiBuilder } from '../types/other';
 import { HttpWorkflow } from './httpworkflow';
+import { ChatThreadTypes, PostTypes } from '../types/types';
+import { BasicClient } from './basicClient';
 
-export class AminoDorksNDC {
+export class AminoDorksNDC implements BasicClient {
     private readonly __httpWorkflow: Safe<HttpWorkflow>;
     private readonly __accountInfo: Safe<Account>;
     private readonly __ndcId: Safe<number>;
@@ -135,26 +137,26 @@ export class AminoDorksNDC {
         });
     };
 
-    public getOnlineUsers = async (start: Safe<number>, size: Safe<number>): Promise<NDCResponses.GetUserProfilesResponse> => {
-        return await this.__httpWorkflow.sendGet<NDCResponses.GetUserProfilesResponse>({
+    public getOnlineUsers = async (start: Safe<number> = 0, size: Safe<number> = 25): Promise<NDCResponses.GetOnlineUsersResponse> => {
+        return await this.__httpWorkflow.sendGet<NDCResponses.GetOnlineUsersResponse>({
             path: `/x${this.__ndcId}/s/live-layer?topic=ndtopic:x${this.__ndcId}:online-members&start=${start}&size=${size}`
         });
     };
 
-    public getUserBlogs = async (userId: Safe<string>, start: Safe<number>, size: Safe<number>): Promise<NDCResponses.GetBlogsResponse> => {
+    public getUserBlogs = async (userId: Safe<string>, start: Safe<number> = 0, size: Safe<number> = 25): Promise<NDCResponses.GetBlogsResponse> => {
         return await this.__httpWorkflow.sendGet<NDCResponses.GetBlogsResponse>({
             path: `/x${this.__ndcId}/s/blog?type=user&q=${userId}&start=${start}&size=${size}`
         });
     };
 
-    public getUserWikis = async (userId: Safe<string>, start: Safe<number>, size: Safe<number>): Promise<NDCResponses.GetWikiResponse> => {
+    public getUserWikis = async (userId: Safe<string>, start: Safe<number> = 0, size: Safe<number> = 25): Promise<NDCResponses.GetWikiResponse> => {
         return await this.__httpWorkflow.sendGet<NDCResponses.GetWikiResponse>({
             path: `/x${this.__ndcId}/s/item?type=user-all&start=${start}&size=${size}&cv=1.2&uid=${userId}`
         });
     };
 
-    public getPublicChatThreads = async (start: Safe<number> = 0, size: Safe<number> = 25, type: Safe<ChatThreadTypes> = 'recommended'): Promise<NDCResponses.GetChatThreadsResponse> => {
-        return await this.__httpWorkflow.sendGet<NDCResponses.GetChatThreadsResponse>({
+    public getPublicChatThreads = async (start: Safe<number> = 0, size: Safe<number> = 25, type: Safe<ChatThreadTypes> = 'recommended'): Promise<ImplementaryResponses.GetChatThreadsResponse> => {
+        return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetChatThreadsResponse>({
             path: `/x${this.__ndcId}/s/chat/thread?type=public-all&filterType=${type}&start=${start}&size=${size}`
         });
     };
@@ -241,45 +243,6 @@ export class AminoDorksNDC {
         });
     };
 
-    public warnUser = async (userId: Safe<number>, reason: Safe<string> = SIGNATURE_STUB): Promise<BasicResponse> => {
-        return await this.__httpWorkflow.sendPost<BasicResponse>({
-            path: `/x${this.__ndcId}/s/notice`,
-            body: JSON.stringify({
-                uid: userId,
-                title: "Custom",
-                content: reason,
-                attachedObject: {
-                    objectId: userId,
-                    objectType: 0
-                },
-                penaltyType: 0,
-                adminOpNote: {},
-                noticeType: 7,
-                timestamp: Date.now()
-            })
-        });
-    };
-
-    public strikeUser = async (userId: Safe<string>, duration: Safe<Strikes> = Strikes.ONE_DAY, reason: Safe<string> = SIGNATURE_STUB, title: Safe<string> = SIGNATURE_STUB): Promise<BasicResponse> => {
-        return await this.__httpWorkflow.sendPost<BasicResponse>({
-            path: `/x${this.__ndcId}/s/notice`,
-            body: JSON.stringify({
-                uid: userId,
-                title: title,
-                content: reason,
-                attachedObject: {
-                    objectId: userId,
-                    objectType: 0
-                },
-                penaltyType: 1,
-                penaltyValue: duration,
-                adminOpNote: {},
-                noticeType: 4,
-                timestamp: Date.now()
-            })
-        });
-    };
-
     public banUser = async (userId: Safe<string>, reason: Safe<string> = SIGNATURE_STUB): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
             path: `/x${this.__ndcId}/s/user-profile/${userId}/ban`,
@@ -303,5 +266,97 @@ export class AminoDorksNDC {
                 timestamp: Date.now()
             })
         });
+    };
+
+    public getUserInfo = async (userId: Safe<string>): Promise<ImplementaryResponses.GetUserInfoResponse> => {
+        return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetUserInfoResponse>({
+            path: `/x${this.__ndcId}/s/user-profile/${userId}`
+        });
+    };
+
+    public getChatThreads = async (start: Safe<number> = 0, size: Safe<number> = 25): Promise<ImplementaryResponses.GetChatThreadsResponse> => {
+        return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetChatThreadsResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread?type=joined-me&start=${start}&size=${size}`
+        });
+    };
+
+    public getChatThread = async (threadId: Safe<string>): Promise<ImplementaryResponses.GetChatThreadRespones> => {
+        return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetChatThreadRespones>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}`
+        });
+    };
+
+    public getChatThreadUsers = async (threadId: Safe<string>, start: Safe<number> = 0, size: Safe<number> = 25): Promise<ImplementaryResponses.GetChatThreadUsersResponse> => {
+        return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetChatThreadUsersResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/member?start=${start}&size=${size}&type=default&cv=1.2`
+        });
+    }
+
+    public joinChatThread = async (threadId: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/member/${this.__accountInfo.uid}`,
+            body: JSON.stringify({})
+        });
+    };
+
+    public leaveChatThread = async (threadId: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendDelete<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/member/${this.__accountInfo.uid}`
+        });
+    };
+
+    public createChatThread = async (startMessage: Safe<string>, chatThreadSettings: ChatThreadSettings): Promise<ImplementaryResponses.GetChatThreadRespones> => {        
+        return await this.__httpWorkflow.sendPost<ImplementaryResponses.GetChatThreadRespones>({
+            path: `/x${this.__ndcId}/s/chat/thread`,
+            body: JSON.stringify({
+                title: chatThreadSettings.title,
+                inviteeUids: chatThreadSettings.invitedUserIds,
+                initialMessageContent: startMessage,
+                content: chatThreadSettings.content,
+                timestamp: Date.now(),
+                type: 0,
+                publishToGlobal: 0
+            })
+        });
+    };
+
+    public inviteToChatThread = async (threadId: Safe<string>, userIds: Safe<string[]>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/member/invite`,
+            body: JSON.stringify({
+                uids: userIds,
+                timestamp: Date.now()
+            })
+        });
+    };
+
+    public kickFromChatThread = async (threadId: Safe<string>, userId: Safe<string>, allowRejoin: Safe<AllowRejoin> = AllowRejoin.Yes): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendDelete<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/member/${userId}?allowRejoin=${allowRejoin}`
+        });
+    };
+
+    public getChatThreadMessages = async (threadId: Safe<string>, size: Safe<number> = 25): Promise<ImplementaryResponses.GetChatThreadMessagesResponse> => {
+        return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetChatThreadMessagesResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/message?v=2&pagingType=t&size=${size}`
+        });
+    };
+
+    public getChatThreadMessagesAfter = async (threadId: Safe<string>, size: Safe<number>, pageToken: Safe<string>): Promise<ImplementaryResponses.GetChatThreadMessagesResponse> => {
+        return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetChatThreadMessagesResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/message?v=2&pagingType=t&pageToken=${pageToken}&size=${size}`
+        });
+    };
+
+    public getUserFollowing = async (followingArguments: FollowingArguments): Promise<NDCResponses.GetUserProfilesResponse> => {
+        return await this.__httpWorkflow.sendGet<NDCResponses.GetUserProfilesResponse>({
+            path: `/x${this.__ndcId}/s/user-profile/${followingArguments.userId}/joined?start=${followingArguments.start}&size=${followingArguments.size}`
+        });
+    };
+
+    public getUserFollowers = async (followingArguments: FollowingArguments): Promise<NDCResponses.GetUserProfilesResponse> => {
+        return await this.__httpWorkflow.sendGet<NDCResponses.GetUserProfilesResponse>({
+            path: `/x${this.__ndcId}/s/user-profile/${followingArguments.userId}/member?start=${followingArguments.start}&size=${followingArguments.size}`
+        });   
     };
 };
