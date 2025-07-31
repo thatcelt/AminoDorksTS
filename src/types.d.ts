@@ -47,3 +47,20 @@ export interface MediaArguments {
     threadId: Safe<string>;
     file: Safe<Buffer>;
 };
+
+interface BlogExtensions {
+    fansOnly: MayUndefined<boolean>;
+    style: {
+        backgroundColor: MayUndefined<string>;
+    };
+}
+
+export interface BlogBuilder {
+    mediaList: string[];
+    extensions?: BlogExtensions;
+};
+
+export interface WikiBuilder extends BlogBuilder {
+    icon?: string;
+}
+

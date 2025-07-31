@@ -170,4 +170,73 @@ export interface InviteCode {
     createdTime: string;
     inviteCode: string;
     author: UserProfile;
+};
+
+export interface Blog {
+    globalVotesCount: number;
+  globalVotedValue: number;
+  votedValue: number;
+  keywords: string;
+  mediaList: null | [number, string, null][];
+  style: number;
+  totalQuizPlayCount: number;
+  title: string;
+  tipInfo: {
+    tipMaxCoin: number;
+    tippersCount: number;
+    tippable: boolean;
+    tipMinCoin: number;
+    tippedCoins: number;
+  };
+  contentRating: number;
+  content: string;
+  needHidden: boolean;
+  guestVotesCount: number;
+  type: number;
+  status: number;
+  globalCommentsCount: number;
+  modifiedTime: string;
+  totalPollVoteCount: number;
+  blogId: string;
+  viewCount: number;
+  language: null | string;
+  author: UserProfile;
+  votesCount: number;
+  ndcId: number;
+  createdTime: string;
+  endTime: null | string;
+  commentsCount: number;
+};
+
+export interface Item {
+  itemId: string;
+  status: number;
+  style: number;
+  globalCommentsCount: number;
+  modifiedTime: string;
+  votedValue: number;
+  globalVotesCount: number;
+  globalVotedValue: number;
+  author: UserProfile;
+  contentRating: number;
+  label: string;
+  content: string;
+  keywords: string;
+  needHidden: boolean;
+  guestVotesCount: number;
+  votesCount: number;
+  createdTime: string;
+  mediaList: [number, string, null][]; // or mediaList: Array<Array<any>>;
+  commentsCount: number;
+};
+
+export interface LotteryLog {
+    awardValue: number;
+    parentType: null;
+    objectId: null;
+    parentId: null;
+    createdTime: string; 
+    awardType: number;
+    refObject: null;
+    objectType: null;
 }

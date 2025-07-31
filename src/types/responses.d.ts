@@ -1,4 +1,4 @@
-import { Account, Community, InviteCode, TransactionData, UserInfoInCommunity, UserProfile, Wallet } from './additional';
+import { Account, Blog, Community, InviteCode, Item, LotteryLog, TransactionData, UserInfoInCommunity, UserProfile, Wallet } from './additional';
 
 export interface BasicResponse {
     ['api:statuscode']: number;
@@ -31,7 +31,7 @@ export namespace GlobalResponses {
 
     export interface GetCommunitiesResponse extends BasicResponse {
         communityList: Community[];
-        userInfoInCommunities: Record<number, UserInfoInCommunity>
+        userInfoInCommunities: Record<number, UserInfoInCommunity>;
     };
 
     export interface SearchCommunityResponse extends BasicResponse {
@@ -49,17 +49,33 @@ export namespace GlobalResponses {
     };
 
     export interface GetWalletHistoryResponse extends BasicResponse {
-        coinHistoryList: TransactionData[]
+        coinHistoryList: TransactionData[];
     };
-
 };
 
 export namespace NDCResponses {
     export interface GetInviteCodesResponse extends BasicResponse {
         communityInvitationList: InviteCode[];
-    }
+    };
 
     export interface CreateInviteCodeResponse extends BasicResponse {
         communityInvitation: InviteCode;
+    };
+
+    export interface GetUserProfilesResponse extends BasicResponse {
+        userProfileList: UserProfile[]
+    };
+
+    export interface CreateBlogResponse extends BasicResponse {
+        blog: Blog;
+    };
+
+    export interface CreateWikiResponse extends BasicResponse {
+        item: Item;
     }
+
+    export interface PlayLotteryResponse extends BasicResponse {
+        lotteryLog: LotteryLog;
+        wallet: Wallet;
+    };
 };

@@ -21,3 +21,4 @@ export const CRYPTO_KEYS: Safe<CryptoKeys> = {
 };
 
 export const INVITE_CODE_DEFAULT_DURATION = 259200;
+export const GLOBAL_TIMEZONE = Math.floor(10800 / 1000);

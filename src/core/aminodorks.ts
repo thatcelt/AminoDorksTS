@@ -3,20 +3,19 @@ import { Account, LinkInfo } from '../types/additional';
 import { GlobalResponses, BasicResponse } from '../types/responses';
 import { MediaTypes } from '../types/types';
 import { decodeSession, generateDeviceId, getPublicKeyCredentials } from '../utils/helpers';
-import { AminoDorksNDC } from './communityClient';
+import { AminoDorksNDC } from './aminodorksNdc';
 import { HttpWorkflow } from './httpworkflow';
 
 export class AminoDorks {
     private readonly __deviceId: Safe<string> = generateDeviceId();
     private __accountInfo: MayUndefined<Account>;
-    public __aminodorksNDC: AminoDorksNDC | undefined;
+    public __aminodorksNdc: AminoDorksNDC | undefined;
 
     private readonly __httpWorkflow: Safe<HttpWorkflow>;
 
     constructor(apiKey: Safe<string>) {
         this.apiKey = apiKey;
         this.__httpWorkflow = new HttpWorkflow({ NDCDEVICEID: this.__deviceId });
-
     };
 
     get apiKey(): Safe<string> {
@@ -34,9 +33,9 @@ export class AminoDorks {
     };
 
     get aminodorksNDC(): Readonly<AminoDorksNDC> {
-        if (!this.__aminodorksNDC) { throw new Error('AminoDorksNDC is not defined'); }
+        if (!this.__aminodorksNdc) { throw new Error('AminoDorksNDC is not defined'); }
 
-        return this.__aminodorksNDC;
+        return this.__aminodorksNdc;
     };
 
     private __remadePublicKey = async (userId: Safe<string>): Promise<BasicResponse> => {
@@ -51,16 +50,10 @@ export class AminoDorks {
     public setNdcId = (ndcId: Safe<number>): Readonly<AminoDorksNDC> => {
         if (!this.__accountInfo) { throw new Error('Account info is not defined'); }
 
-        this.__aminodorksNDC = new AminoDorksNDC(this.__httpWorkflow, this.__accountInfo, ndcId);
+        this.__aminodorksNdc = new AminoDorksNDC(this.__httpWorkflow, this.__accountInfo, ndcId);
 
-        return this.__aminodorksNDC;
+        return this.__aminodorksNdc;
     }
-
-    public getLinkResolution = async (link: string): Promise<LinkInfo> => {
-        return (await this.__httpWorkflow.sendGet<GlobalResponses.LinkResolutionResponse>({
-            path: `/g/s/link-resolution?q=${link.split('/')[4]}`
-        })).linkInfoV2.extensions.linkInfo;
-    };
 
     public uploadMedia = async (file: Safe<Buffer>, type: Safe<MediaTypes>): Promise<GlobalResponses.UploadMediaResponse> => {
         return await this.__httpWorkflow.sendPost<GlobalResponses.UploadMediaResponse>({
@@ -68,6 +61,12 @@ export class AminoDorks {
             body: file,
             contentType: type
         });
+    };
+
+    public getLinkResolution = async (link: string): Promise<LinkInfo> => {
+        return (await this.__httpWorkflow.sendGet<GlobalResponses.LinkResolutionResponse>({
+            path: `/g/s/link-resolution?q=${link.split('/')[4]}`
+        })).linkInfoV2.extensions.linkInfo;
     };
 
     public authenticate = async (email: Safe<string>, password: Safe<string>): Promise<GlobalResponses.AuthenticateResponse> => {
