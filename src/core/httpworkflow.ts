@@ -19,7 +19,6 @@ export class HttpWorkflow {
         configuredHeaders['NDC-MSG-SIG'] = typeof body === 'string' ? generateHMAC(body) : generateHMACFromBuffer(body);
         if (this.__localHeaders['AUID'] && typeof body === 'string') configuredHeaders['NDC-MESSAGE-SIGNATURE'] = await generateECDSA(body, configuredHeaders['AUID']);
         if (contentType) configuredHeaders['Content-Type'] = contentType;
-
         return configuredHeaders;
     };
 

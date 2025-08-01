@@ -1,18 +1,18 @@
 import { GLOBAL_TIMEZONE, INVITE_CODE_DEFAULT_DURATION, SIGNATURE_STUB } from '../constants';
 import { Safe } from '../types';
-import { Account, InviteCode } from '../types/additional';
+import { InviteCode, UserProfile } from '../types/additional';
 import { BasicResponse, ImplementaryResponses, NDCResponses } from '../types/responses';
-import { AllowRejoin, BlogBuilder, ChatThreadSettings, FollowingArguments, OnlineStatus, Timer, WikiBuilder } from '../types/other';
+import { AllowRejoin, BlogBuilder, ChatThreadSettings, FollowingArguments, MediaArguments, MessageTypes, OnlineStatus, Timer, WikiBuilder } from '../types/other';
 import { HttpWorkflow } from './httpworkflow';
-import { ChatThreadTypes, PostTypes } from '../types/types';
+import { ChatThreadTypes, CommentsSorting, PostTypes } from '../types/types';
 import { BasicClient } from './basicClient';
 
 export class AminoDorksNDC implements BasicClient {
     private readonly __httpWorkflow: Safe<HttpWorkflow>;
-    private readonly __accountInfo: Safe<Account>;
+    private readonly __accountInfo: Safe<UserProfile>;
     private readonly __ndcId: Safe<number>;
 
-    constructor(httpWorkflow: Safe<HttpWorkflow>, accountInfo: Safe<Account>, ndcId: Safe<number>) {
+    constructor(httpWorkflow: Safe<HttpWorkflow>, accountInfo: Safe<UserProfile>, ndcId: Safe<number>) {
         this.__httpWorkflow = httpWorkflow;
         this.__accountInfo = accountInfo;
         this.__ndcId = ndcId;
@@ -47,14 +47,14 @@ export class AminoDorksNDC implements BasicClient {
         });
     };
 
-    public createBlog = async (title: Safe<string>, content: Safe<string>, builder: BlogBuilder = { mediaList: [] }): Promise<NDCResponses.CreateBlogResponse> => {        
+    public createBlog = async (title: Safe<string>, content: Safe<string>, builder: BlogBuilder = { mediaList: [] }): Promise<ImplementaryResponses.GetCreateBlogResponse> => {        
         const dataToDump = {
             address: null,
             content: content,
             title: title,
             latitude: 0,
             longitude: 0,
-            eventSource: "GlobalComposeMenu",
+            eventSource: 'GlobalComposeMenu',
             timestamp: Date.now(),
             mediaList: builder.mediaList.map(mediaUrl => {
                 return [100, mediaUrl, null]
@@ -64,18 +64,18 @@ export class AminoDorksNDC implements BasicClient {
 
         if (builder.extensions) dataToDump['extensions'] = builder.extensions;
 
-        return await this.__httpWorkflow.sendPost<NDCResponses.CreateBlogResponse>({
+        return await this.__httpWorkflow.sendPost<ImplementaryResponses.GetCreateBlogResponse>({
             path: `/x${this.__ndcId}/s/blog`,
             body: JSON.stringify(dataToDump)
         });
     };
 
-    public createWiki = async (label: Safe<string>, content: Safe<string>, builder: WikiBuilder = { mediaList: [] }, keywords: Safe<string> = SIGNATURE_STUB): Promise<NDCResponses.CreateWikiResponse> => {
+    public createWiki = async (label: Safe<string>, content: Safe<string>, builder: WikiBuilder = { mediaList: [] }, keywords: Safe<string> = SIGNATURE_STUB): Promise<ImplementaryResponses.GetCreateWikiResponse> => {
         const dataToDump = {
             label: label,
             content: content,
             icon: builder.icon,
-            eventSource: "GlobalComposeMenu",
+            eventSource: 'GlobalComposeMenu',
             timestamp: Date.now(),
             keywords: keywords,
             mediaList: builder.mediaList.map(mediaUrl => {
@@ -86,7 +86,7 @@ export class AminoDorksNDC implements BasicClient {
 
         if (builder.extensions) dataToDump['extensions'] = builder.extensions;
 
-        return await this.__httpWorkflow.sendPost<NDCResponses.CreateWikiResponse>({
+        return await this.__httpWorkflow.sendPost<ImplementaryResponses.GetCreateWikiResponse>({
             path: `/x${this.__ndcId}/s/item`,
             body: JSON.stringify(dataToDump)
         });
@@ -149,8 +149,8 @@ export class AminoDorksNDC implements BasicClient {
         });
     };
 
-    public getUserWikis = async (userId: Safe<string>, start: Safe<number> = 0, size: Safe<number> = 25): Promise<NDCResponses.GetWikiResponse> => {
-        return await this.__httpWorkflow.sendGet<NDCResponses.GetWikiResponse>({
+    public getUserWikis = async (userId: Safe<string>, start: Safe<number> = 0, size: Safe<number> = 25): Promise<NDCResponses.GetWikisResponse> => {
+        return await this.__httpWorkflow.sendGet<NDCResponses.GetWikisResponse>({
             path: `/x${this.__ndcId}/s/item?type=user-all&start=${start}&size=${size}&cv=1.2&uid=${userId}`
         });
     };
@@ -358,5 +358,83 @@ export class AminoDorksNDC implements BasicClient {
         return await this.__httpWorkflow.sendGet<NDCResponses.GetUserProfilesResponse>({
             path: `/x${this.__ndcId}/s/user-profile/${followingArguments.userId}/member?start=${followingArguments.start}&size=${followingArguments.size}`
         });   
+    };
+
+    public getBlogInfo = async (blogId: Safe<string>): Promise<ImplementaryResponses.GetCreateBlogResponse> => {
+        return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetCreateBlogResponse>({
+            path: `/x${this.__ndcId}/s/blog/${blogId}`
+        });
+    };
+
+    public getWikiInfo = async (itemId: Safe<string>): Promise<ImplementaryResponses.GetCreateWikiResponse> => {
+        return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetCreateWikiResponse>({
+            path: `/x${this.__ndcId}/s/item/${itemId}`
+        });
+    };
+
+    public getWallComments = async (userId: Safe<string>, sorting: Safe<CommentsSorting> = 'newest', start: Safe<number> = 0, size: Safe<number> = 25): Promise<ImplementaryResponses.GetCommentsResponse> => {
+        return this.__httpWorkflow.sendGet<ImplementaryResponses.GetCommentsResponse>({
+            path: `/x${this.__ndcId}/s/user-profile/${userId}/comment?sort=${sorting}&start=${start}&size=${size}`
+        });
+    };
+
+    // TODO: solve 105 status code error
+    public sendMessage = async (threadId: Safe<string>, content: Safe<string>, messageType: Safe<MessageTypes> = 0): Promise<BasicResponse> => {
+        const dataToDump = {
+            type: messageType,
+            content: content,
+            clientRefId: Math.floor((Date.now() / 10) % 1000000000),
+            attachedObject: null,
+            timestamp: Date.now(),
+            uid: this.__accountInfo.uid
+        }
+        
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/message`,
+            body: JSON.stringify(dataToDump)
+        });
+    };
+
+    public sendSticker = async (threadId: Safe<string>, stickerId: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/message`,
+            body: JSON.stringify({
+                type: 3,
+                stickerId: stickerId,
+                content: null,
+                clientRefId: Math.floor(Date.now() / 10) % 1000000000,
+                timestamp: Date.now()
+            })
+        });
+    };
+    
+    public sendImage = async (mediaArguments: MediaArguments): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${mediaArguments.threadId}/message`,
+            body: JSON.stringify({
+                type: 0,
+                mediaType: 100,
+                mediaUploadValueContentType: 'image/jpg',
+                mediaUhqEnabled: true,
+                mediaUploadValue: mediaArguments.file.toString('base64'),
+                content: null,
+                clientRefId: Math.floor(Date.now() / 10) % 1000000000,
+                timestamp: Date.now()
+            })
+        });
+    };
+
+    public sendAudio = async (mediaArguments: MediaArguments): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${mediaArguments.threadId}/message`,
+            body: JSON.stringify({
+                type: 2,
+                mediaType: 110,
+                mediaUploadValue: mediaArguments.file.toString('base64'),
+                content: null,
+                clientRefId: Math.floor(Date.now() / 10) % 1000000000,
+                timestamp: Date.now()
+            })
+        });
     };
 };

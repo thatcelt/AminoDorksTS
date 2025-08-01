@@ -1,4 +1,4 @@
-import { MayUndefined, Safe } from "../types";
+import { MayUndefined, Safe } from '../types';
 
 export enum MessageTypes {
     Default = 0
@@ -21,8 +21,15 @@ export interface ChatThreadSettings {
 };
 
 export interface MessageSettings {
-    mentionedArray?: MayUndefined<string[]>;
-    embed?: MayUndefined<string>;
+    mentionedArray?: string[];
+    embed?: {
+        objectId?: string;
+        objectType?: number;
+        link?: string;
+        title: string;
+        content: string;
+        mediaList?: string;
+    };
     repliedMessageId?: MayUndefined<string>;
 };
 
@@ -57,4 +64,3 @@ export interface Timer {
     start: Safe<number>;
     end: Safe<number>;
 };
-

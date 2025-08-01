@@ -1,6 +1,6 @@
 import { MayUndefined, Safe } from '../types';
-import { Account, LinkInfo } from '../types/additional';
-import { GlobalResponses, BasicResponse } from '../types/responses';
+import { LinkInfo, UserProfile } from '../types/additional';
+import { GlobalResponses, BasicResponse, ImplementaryResponses } from '../types/responses';
 import { MediaTypes } from '../types/types';
 import { decodeSession, generateDeviceId, getPublicKeyCredentials } from '../utils/helpers';
 import { AminoDorksNDC } from './aminodorksNdc';
@@ -8,7 +8,7 @@ import { HttpWorkflow } from './httpworkflow';
 
 export class AminoDorks {
     private readonly __deviceId: Safe<string> = generateDeviceId();
-    private __accountInfo: MayUndefined<Account>;
+    private __accountInfo: MayUndefined<UserProfile>;
     public __aminodorksNdc: AminoDorksNDC | undefined;
 
     private readonly __httpWorkflow: Safe<HttpWorkflow>;
@@ -28,7 +28,7 @@ export class AminoDorks {
         process.env.API_KEY = apiKey;
     };
 
-    get accountInfo(): MayUndefined<Account> {
+    get accountInfo(): MayUndefined<UserProfile> {
         return this.__accountInfo;
     };
 
@@ -85,7 +85,7 @@ export class AminoDorks {
         if (response.sid == undefined) { throw new Error(`Authentication failed: ${response['api:message']}`); }
 
         this.__httpWorkflow.addAdditionalHeaders({ AUID: response.auid, NDCAUTH: `sid=${response.sid}` });
-        this.__accountInfo = response.account;
+        this.__accountInfo = response.userProfile;
         await this.__remadePublicKey(response.account.uid);
 
         return response;
@@ -97,6 +97,7 @@ export class AminoDorks {
         if (!sessionData) { throw new Error('Invalid session'); }
         
         this.__httpWorkflow.addAdditionalHeaders({ AUID: sessionData.userId, NDCAUTH: `sid=${sessionId}` });
+        this.__accountInfo = (await this.getUserInfo(sessionData.userId)).userProfile;
         return await this.__remadePublicKey(sessionData.userId);
 
     };
@@ -230,5 +231,11 @@ export class AminoDorks {
         return await this.__httpWorkflow.sendGet<GlobalResponses.GetWalletHistoryResponse>({
             path: `/g/s/wallet/coin/history?start=${start}&size=${size}`
         });
-    }
+    };
+
+    public getUserInfo = async (userId: Safe<string>): Promise<ImplementaryResponses.GetUserInfoResponse> => {
+        return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetUserInfoResponse>({
+            path: `/g/s/user-profile/${userId}`
+        });
+    };
 };

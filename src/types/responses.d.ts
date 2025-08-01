@@ -1,5 +1,5 @@
 import { Message } from 'frida';
-import { Account, Blog, ChatThread, Community, InviteCode, Item, LotteryLog, TransactionData, UserInfoInCommunity, UserProfile, Wallet } from './additional';
+import { Account, Blog, ChatThread, Comment, Community, InviteCode, Item, LotteryLog, TransactionData, UserInfoInCommunity, UserProfile, Wallet } from './additional';
 
 export interface BasicResponse {
     ['api:statuscode']: number;
@@ -32,6 +32,19 @@ export namespace ImplementaryResponses {
             prevPageToken: string;
         };
     };
+
+    export interface GetCreateBlogResponse extends BasicResponse {
+        blog: Blog;
+    };
+
+    export interface GetCreateWikiResponse extends BasicResponse {
+        item: Item;
+    }
+
+    export interface GetCommentsResponse extends BasicResponse {
+        commentList: Comment[];
+    }
+
 };
 
 export namespace GlobalResponses {
@@ -93,14 +106,6 @@ export namespace NDCResponses {
         userProfileList: UserProfile[]
     };
 
-    export interface CreateBlogResponse extends BasicResponse {
-        blog: Blog;
-    };
-
-    export interface CreateWikiResponse extends BasicResponse {
-        item: Item;
-    };
-
     export interface PlayLotteryResponse extends BasicResponse {
         lotteryLog: LotteryLog;
         wallet: Wallet;
@@ -110,7 +115,7 @@ export namespace NDCResponses {
         blogList: Blog[];
     };
 
-    export interface GetWikiResponse extends BasicResponse {
+    export interface GetWikisResponse extends BasicResponse {
         itemList: Item[];
     };
 

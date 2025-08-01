@@ -297,4 +297,20 @@ export interface Message {
   createdTime: string;
   type: number;
   mediaValue: string;
+};
+
+export interface Comment {
+  modifiedTime: string;
+  ndcId: number;
+  votedValue: number;
+  parentType: number;
+  commentId: string;
+  parentNdcId: number;
+  votesSum: number;
+  author: UserProfile;
+  content: string;
+  parentId: string;
+  createdTime: string;
+  subcommentsCount: number;
+  type: number;
 }

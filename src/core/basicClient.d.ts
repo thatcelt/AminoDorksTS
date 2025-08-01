@@ -1,6 +1,6 @@
-import { ChatThreadSettings } from '../types/other';
+import { ChatThreadSettings, MessageSettings, MessageTypes } from '../types/other';
 import { BasicResponse, ImplementaryResponses, NDCResponses } from '../types/responses';
-//import { CommentsSorting, MembersType, PostTypes } from '../types/types';
+import { CommentsSorting } from '../types/types';
 
 export interface BasicClient {
     getUserInfo(userId: Safe<string>): Promise<ImplementaryResponses.GetUserInfoResponse>;
@@ -14,14 +14,15 @@ export interface BasicClient {
     kickFromChatThread(threadId: Safe<string>, userId: Safe<string>, allowRejoin: Safe<boolean>): Promise<BasicResponse>;
     getChatThreadMessages(threadId: Safe<string>, size: Safe<number>): Promise<BasicResponse>;
     getChatThreadMessagesAfter(threadId: Safe<string>, size: Safe<number>, pageToken: Safe<string>): Promise<BasicResponse>;
-    getUserFollowing(arguments: FollowingArguments): Promise<NDCResponses.GetUserProfilesResponse>;
-    getUserFollowers(arguments: FollowingArguments): Promise<BasicResponse>;
-    // getPostInfo(objectId: Safe<string>, postType: Safe<PostTypes>): Promise<BasicResponse>;
-    // getWallComments(userId: Safe<string>, sorting: Safe<CommentsSorting>, start: Safe<number>, size: Safe<number>): Promise<BasicResponse>;
-    // sendMessage(threadId: Safe<string>, content: Safe<string>, messageType: Safe<MessageTypes>, messageSettings: MayUndefined<MessageSettings>): Promise<BasicResponse>;
-    // sendSticker(threadId: Safe<string>, stickerId: Safe<string>): Promise<BasicResponse>;
-    // sendImage(arguments: MediaArguments): Promise<BasicResponse>;
-    // sendAudio(arguments: MediaArguments): Promise<BasicResponse>;
+    getUserFollowing(followingArguments: FollowingArguments): Promise<NDCResponses.GetUserProfilesResponse>;
+    getUserFollowers(followingArguments: FollowingArguments): Promise<BasicResponse>;
+    getBlogInfo(blogId: Safe<string>): Promise<ImplementaryResponses.GetCreateBlogResponse>;
+    getWikiInfo(itemId: Safe<string>): Promise<ImplementaryResponses.GetCreateWikiResponse>;
+    getWallComments(userId: Safe<string>, sorting: Safe<CommentsSorting>, start: Safe<number>, size: Safe<number>): Promise<ImplementaryResponses.GetCommentsResponse>;
+    sendMessage(threadId: Safe<string>, content: Safe<string>, messageType: Safe<MessageTypes>, messageSettings?: MayUndefined<MessageSettings>): Promise<BasicResponse>;
+    sendSticker(threadId: Safe<string>, stickerId: Safe<string>): Promise<BasicResponse>;
+    sendImage(mediaArguments: MediaArguments): Promise<BasicResponse>;
+    sendAudio(mediaArguments: MediaArguments): Promise<BasicResponse>;
     // deleteMessage(threadId: Safe<string>, messageId: Safe<string>);
     // deleteMessageAsAdmin(threadId: Safe<string>, messageId: Safe<string>, reason: Safe<string>);
     // editChatThread(threadId: Safe<string>): Promise<string>
