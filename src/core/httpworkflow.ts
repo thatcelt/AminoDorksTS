@@ -19,6 +19,7 @@ export class HttpWorkflow {
         configuredHeaders['NDC-MSG-SIG'] = typeof body === 'string' ? generateHMAC(body) : generateHMACFromBuffer(body);
         if (this.__localHeaders['AUID'] && typeof body === 'string') configuredHeaders['NDC-MESSAGE-SIGNATURE'] = await generateECDSA(body, configuredHeaders['AUID']);
         if (contentType) configuredHeaders['Content-Type'] = contentType;
+
         return configuredHeaders;
     };
 
@@ -43,10 +44,24 @@ export class HttpWorkflow {
     public sendPost = async <T extends BasicResponse>(config: PostRequestCfg) => {
         const response = await fetch(`${BASE_URL}${config.path}`, {
             method: 'POST',
-            headers: config.body ? await this.__configureHeaders(config.body, config.contentType) : this.__localHeaders,
+            headers: await this.__configureHeaders(config.body, config.contentType),
             body: config.body
         });
 
         return (await response.json()) as T;
     };
+
+    public sendPostWithoutBody = async <T extends BasicResponse>(config: Omit<PostRequestCfg, 'body'>) => {
+        const configuredHeaders = structuredClone(this.__localHeaders);
+
+        if (config.contentType) configuredHeaders['Content-Type'] = config.contentType;
+        configuredHeaders['Content-Length'] = '0';
+
+        const response = await fetch(`${BASE_URL}${config.path}`, {
+            method: 'POST',
+            headers: configuredHeaders
+        });
+        
+        return (await response.json()) as T;
+    }
 };

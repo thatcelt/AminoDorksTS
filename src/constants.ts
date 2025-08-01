@@ -5,11 +5,11 @@ export const GENERATORS_URL: Safe<string> = 'https://qfhmflnp-3000.euw.devtunnel
 
 export const BASE_HEADERS: Defined<StructuredHeaders> = {
     'Accept-Encoding': 'gzip',
-    'Accept-Language': 'en-US',
+    'Accept-Language': 'ru-RU',
     'Host': 'service.aminoapps.com',
     'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 10; M2006C3MNG Build/QP1A.190711.020;com.narvii.amino.master/4.3.3121)',
-    'NDCLANG': 'en',
     'CONNECTION': 'Keep-Alive',
+    'NDCLANG': 'ru',
     'Content-Type': 'application/json; charset=utf8'
 };
 

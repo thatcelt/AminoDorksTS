@@ -293,7 +293,7 @@ export class AminoDorksNDC implements BasicClient {
     }
 
     public joinChatThread = async (threadId: Safe<string>): Promise<BasicResponse> => {
-        return await this.__httpWorkflow.sendPost<BasicResponse>({
+        return await this.__httpWorkflow.sendPostWithoutBody<BasicResponse>({
             path: `/x${this.__ndcId}/s/chat/thread/${threadId}/member/${this.__accountInfo.uid}`
         });
     };
@@ -511,21 +511,21 @@ export class AminoDorksNDC implements BasicClient {
     };
 
     public setViewOnly = async (editingArguments: Safe<EditChatArguments>): Promise<BasicResponse> => {
-        return await this.__httpWorkflow.sendPost<BasicResponse>({
+        return await this.__httpWorkflow.sendPostWithoutBody<BasicResponse>({
             path: `/x${this.__ndcId}/s/chat/thread/${editingArguments.threadId}/view-only/${editingArguments.status}`,
             contentType: 'application/x-www-form-urlencoded'
         });
     };
 
     public setCanInvite = async (editingArguments: Safe<EditChatArguments>): Promise<BasicResponse> => {
-        return await this.__httpWorkflow.sendPost<BasicResponse>({
+        return await this.__httpWorkflow.sendPostWithoutBody<BasicResponse>({
             path: `/x${this.__ndcId}/s/chat/thread/${editingArguments.threadId}/members-can-invite/${editingArguments.status}`,
             contentType: 'application/x-www-form-urlencoded'
         });
     };
 
     public setCanTip(editingArguments: Safe<EditChatArguments>): Promise<BasicResponse> {
-        return this.__httpWorkflow.sendPost<BasicResponse>({
+        return this.__httpWorkflow.sendPostWithoutBody<BasicResponse>({
             path: `/x${this.__ndcId}/s/chat/thread/${editingArguments.threadId}/tipping-perm-status/${editingArguments.status}`,
             contentType: 'application/x-www-form-urlencoded'
         });

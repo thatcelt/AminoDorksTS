@@ -6,7 +6,7 @@ export type StructuredHeaders = Record<string, string>;
 
 export interface PostRequestCfg {
     path: Safe<string>;
-    body?: Safe<string | Buffer>;
+    body: Safe<string | Buffer>;
     contentType?: MayUndefined<string>;
 };
 
