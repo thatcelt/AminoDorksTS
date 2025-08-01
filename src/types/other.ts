@@ -1,8 +1,13 @@
 import { MayUndefined, Safe } from '../types';
+import { ChatThreadStatus } from './types';
 
 export enum MessageTypes {
-    Default = 0
+  General = 0,
+  Strike = 1,
+  ShareExurl = 50,
+  ShareUser = 51
 };
+
 
 export enum OnlineStatus {
     Online = 1,
@@ -22,14 +27,6 @@ export interface ChatThreadSettings {
 
 export interface MessageSettings {
     mentionedArray?: string[];
-    embed?: {
-        objectId?: string;
-        objectType?: number;
-        link?: string;
-        title: string;
-        content: string;
-        mediaList?: string;
-    };
     repliedMessageId?: MayUndefined<string>;
 };
 
@@ -63,4 +60,29 @@ export interface WikiBuilder extends BlogBuilder {
 export interface Timer {
     start: Safe<number>;
     end: Safe<number>;
+};
+
+export interface Embed {
+    objectId?: string;
+    objectType?: number;
+    link?: string;
+    title: string;
+    content: string;
+    mediaList?: string;
+};
+
+export interface EditChatThreadBuilder {
+    title?: string;
+    content?: string;
+    icon?: string;
+    keywords?: string;
+    extensions?: {
+        announcement?: string;
+        pinAnnouncement?: boolean;
+    };
+};
+
+export interface EditChatArguments {
+    threadId: Safe<string>;
+    status: Safe<ChatThreadStatus>;
 };

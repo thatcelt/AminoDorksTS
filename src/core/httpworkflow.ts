@@ -43,7 +43,7 @@ export class HttpWorkflow {
     public sendPost = async <T extends BasicResponse>(config: PostRequestCfg) => {
         const response = await fetch(`${BASE_URL}${config.path}`, {
             method: 'POST',
-            headers: await this.__configureHeaders(config.body, config.contentType),
+            headers: config.body ? await this.__configureHeaders(config.body, config.contentType) : this.__localHeaders,
             body: config.body
         });
 

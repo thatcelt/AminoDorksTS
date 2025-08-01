@@ -1,15 +1,15 @@
-import { ChatThreadSettings, MessageSettings, MessageTypes } from '../types/other';
+import { ChatThreadSettings, EditChatArguments, EditChatThreadBuilder, Embed, MessageSettings, MessageTypes } from '../types/other';
 import { BasicResponse, ImplementaryResponses, NDCResponses } from '../types/responses';
 import { CommentsSorting } from '../types/types';
 
 export interface BasicClient {
     getUserInfo(userId: Safe<string>): Promise<ImplementaryResponses.GetUserInfoResponse>;
     getChatThreads(start: Safe<number>, size: Safe<number>): Promise<ImplementaryResponses.GetChatThreadsResponse>;
-    getChatThread(threadId: Safe<string>): Promise<ImplementaryResponses.GetChatThreadRespones>;
+    getChatThread(threadId: Safe<string>): Promise<ImplementaryResponses.GetChatThreadResponse>;
     getChatThreadUsers(threadId: Safe<string>, start: Safe<number>, size: Safe<number>): Promise<ImplementaryResponses.GetChatThreadUsersResponse>;
     joinChatThread(threadId: Safe<string>): Promise<BasicResponse>;
     leaveChatThread(threadId: Safe<string>): Promise<BasicResponse>;
-    createChatThread(startMessage: Safe<string>, chatThreadSettings: Safe<ChatThreadSettings>): Promise<ImplementaryResponses.GetChatThreadRespones>;
+    createChatThread(startMessage: Safe<string>, chatThreadSettings: Safe<ChatThreadSettings>): Promise<ImplementaryResponses.GetChatThreadResponse>;
     inviteToChatThread(threadId: Safe<string>, userIds: Safe<string[]>): Promise<BasicResponse>;
     kickFromChatThread(threadId: Safe<string>, userId: Safe<string>, allowRejoin: Safe<boolean>): Promise<BasicResponse>;
     getChatThreadMessages(threadId: Safe<string>, size: Safe<number>): Promise<BasicResponse>;
@@ -19,13 +19,19 @@ export interface BasicClient {
     getBlogInfo(blogId: Safe<string>): Promise<ImplementaryResponses.GetCreateBlogResponse>;
     getWikiInfo(itemId: Safe<string>): Promise<ImplementaryResponses.GetCreateWikiResponse>;
     getWallComments(userId: Safe<string>, sorting: Safe<CommentsSorting>, start: Safe<number>, size: Safe<number>): Promise<ImplementaryResponses.GetCommentsResponse>;
-    sendMessage(threadId: Safe<string>, content: Safe<string>, messageType: Safe<MessageTypes>, messageSettings?: MayUndefined<MessageSettings>): Promise<BasicResponse>;
-    sendSticker(threadId: Safe<string>, stickerId: Safe<string>): Promise<BasicResponse>;
-    sendImage(mediaArguments: MediaArguments): Promise<BasicResponse>;
-    sendAudio(mediaArguments: MediaArguments): Promise<BasicResponse>;
-    // deleteMessage(threadId: Safe<string>, messageId: Safe<string>);
-    // deleteMessageAsAdmin(threadId: Safe<string>, messageId: Safe<string>, reason: Safe<string>);
-    // editChatThread(threadId: Safe<string>): Promise<string>
+    sendMessage(threadId: Safe<string>, content: Safe<string>, messageType: Safe<MessageTypes>, messageSettings?: MessageSettings): Promise<ImplementaryResponses.SendMessageResponse>;
+    sendEmbededMessage(threadId: Safe<string>, content: Safe<string>, embed: Embed, messageSettings?: MessageSettings): Promise<ImplementaryResponses.SendMessageResponse>;
+    sendSticker(threadId: Safe<string>, stickerId: Safe<string>): Promise<ImplementaryResponses.SendMessageResponse>;
+    sendImage(mediaArguments: MediaArguments): Promise<ImplementaryResponses.SendMessageResponse>;
+    sendAudio(mediaArguments: MediaArguments): Promise<ImplementaryResponses.SendMessageResponse>;
+    deleteMessage(threadId: Safe<string>, messageId: Safe<string>): Promise<BasicResponse>;
+    deleteMessageAsAdmin(threadId: Safe<string>, messageId: Safe<string>, reason: Safe<string>): Promise<BasicResponse>;
+    editChatThread(threadId: Safe<string>, builder: EditChatThreadBuilder): Promise<ImplementaryResponses.GetChatThreadResponse>
+    setChatThreadBackground(threadId: Safe<string>, background: Safe<string>): Promise<BasicResponse>;
+    addCoHosts(threadId: Safe<string>, userIds: Safe<string[]>): Promise<BasicResponse>;
+    setViewOnly(editingArguments: Safe<EditChatArguments>): Promise<BasicResponse>;
+    setCanInvite(editingArguments: Safe<EditChatArguments>): Promise<BasicResponse>;
+    setCanTip(editingArguments: Safe<EditChatArguments>): Promise<BasicResponse>;
     // tipCoinsBlog(coins: Safe<number>, blogId: Safe<string>): Promise<BasicResponse>;
     // tipCoinsChatThread(coins: Safe<number>, threadId: Safe<string>): Promise<BasicResponse>;
     // follow(userIds: Safe<string[]>): Promise<BasicResponse>;
@@ -40,4 +46,4 @@ export interface BasicClient {
     // getAllUsers(usersType: Safe<MembersType>, start: Safe<number>, size: Safe<number>): Promise<BasicResponse>;
     // transferHostRequest(threadId: Safe<string>, userId: Safe<string>): Promise<BasicResponse>;
     // transferHostAccept(threadId: Safe<string>, requestId: Safe<string>): Promise<BasicResponse>;
-}
+};

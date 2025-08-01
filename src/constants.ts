@@ -20,6 +20,7 @@ export const CRYPTO_KEYS: Safe<CryptoKeys> = {
     DEVICE_LENGTH: 20
 };
 
-export const INVITE_CODE_DEFAULT_DURATION = 259200;
-export const GLOBAL_TIMEZONE = Math.floor(10800 / 1000);
-export const SIGNATURE_STUB = 'viva la aminodorks ;3';
+export const INVITE_CODE_DEFAULT_DURATION: Safe<number> = 259200;
+export const GLOBAL_TIMEZONE: Safe<number> = Math.floor(10800 / 1000);
+export const SIGNATURE_STUB: Safe<string> = 'viva la aminodorks ;3';
+export const STATIC_CLIENT_REFERENCE_ID: Safe<number> = 404354928;

@@ -196,8 +196,7 @@ export class AminoDorks {
 
     public leaveCommunity = async (ndcId: Safe<number>): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
-            path: `/x${ndcId}/s/community/leave`,
-            body: JSON.stringify({})
+            path: `/x${ndcId}/s/community/leave`
         });
     };
 

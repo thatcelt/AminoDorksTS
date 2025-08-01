@@ -1,8 +1,8 @@
-import { GLOBAL_TIMEZONE, INVITE_CODE_DEFAULT_DURATION, SIGNATURE_STUB } from '../constants';
+import { GLOBAL_TIMEZONE, INVITE_CODE_DEFAULT_DURATION, SIGNATURE_STUB, STATIC_CLIENT_REFERENCE_ID } from '../constants';
 import { Safe } from '../types';
 import { InviteCode, UserProfile } from '../types/additional';
 import { BasicResponse, ImplementaryResponses, NDCResponses } from '../types/responses';
-import { AllowRejoin, BlogBuilder, ChatThreadSettings, FollowingArguments, MediaArguments, MessageTypes, OnlineStatus, Timer, WikiBuilder } from '../types/other';
+import { AllowRejoin, BlogBuilder, ChatThreadSettings, EditChatArguments, EditChatThreadBuilder, Embed, FollowingArguments, MediaArguments, MessageSettings, MessageTypes, OnlineStatus, Timer, WikiBuilder } from '../types/other';
 import { HttpWorkflow } from './httpworkflow';
 import { ChatThreadTypes, CommentsSorting, PostTypes } from '../types/types';
 import { BasicClient } from './basicClient';
@@ -280,8 +280,8 @@ export class AminoDorksNDC implements BasicClient {
         });
     };
 
-    public getChatThread = async (threadId: Safe<string>): Promise<ImplementaryResponses.GetChatThreadRespones> => {
-        return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetChatThreadRespones>({
+    public getChatThread = async (threadId: Safe<string>): Promise<ImplementaryResponses.GetChatThreadResponse> => {
+        return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetChatThreadResponse>({
             path: `/x${this.__ndcId}/s/chat/thread/${threadId}`
         });
     };
@@ -294,8 +294,7 @@ export class AminoDorksNDC implements BasicClient {
 
     public joinChatThread = async (threadId: Safe<string>): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
-            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/member/${this.__accountInfo.uid}`,
-            body: JSON.stringify({})
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/member/${this.__accountInfo.uid}`
         });
     };
 
@@ -305,8 +304,8 @@ export class AminoDorksNDC implements BasicClient {
         });
     };
 
-    public createChatThread = async (startMessage: Safe<string>, chatThreadSettings: ChatThreadSettings): Promise<ImplementaryResponses.GetChatThreadRespones> => {        
-        return await this.__httpWorkflow.sendPost<ImplementaryResponses.GetChatThreadRespones>({
+    public createChatThread = async (startMessage: Safe<string>, chatThreadSettings: ChatThreadSettings): Promise<ImplementaryResponses.GetChatThreadResponse> => {        
+        return await this.__httpWorkflow.sendPost<ImplementaryResponses.GetChatThreadResponse>({
             path: `/x${this.__ndcId}/s/chat/thread`,
             body: JSON.stringify({
                 title: chatThreadSettings.title,
@@ -378,38 +377,60 @@ export class AminoDorksNDC implements BasicClient {
         });
     };
 
-    // TODO: solve 105 status code error
-    public sendMessage = async (threadId: Safe<string>, content: Safe<string>, messageType: Safe<MessageTypes> = 0): Promise<BasicResponse> => {
-        const dataToDump = {
-            type: messageType,
-            content: content,
-            clientRefId: Math.floor((Date.now() / 10) % 1000000000),
-            attachedObject: null,
-            timestamp: Date.now(),
-            uid: this.__accountInfo.uid
-        }
-        
-        return await this.__httpWorkflow.sendPost<BasicResponse>({
+    public sendMessage = async (threadId: Safe<string>, content: Safe<string>, messageType: Safe<MessageTypes> = 0, messageSettings?: MessageSettings): Promise<ImplementaryResponses.SendMessageResponse> => {
+        return await this.__httpWorkflow.sendPost<ImplementaryResponses.SendMessageResponse>({
             path: `/x${this.__ndcId}/s/chat/thread/${threadId}/message`,
-            body: JSON.stringify(dataToDump)
+            body: JSON.stringify({
+                type: messageType,
+                content: content,
+                attachedObject: null,
+                clientRefId: STATIC_CLIENT_REFERENCE_ID,
+                timestamp: Date.now(),
+                uid: this.__accountInfo.uid,
+                extensions: {mentionedArray: messageSettings?.mentionedArray},
+                replyMessageId: messageSettings?.repliedMessageId
+            })
         });
     };
 
-    public sendSticker = async (threadId: Safe<string>, stickerId: Safe<string>): Promise<BasicResponse> => {
-        return await this.__httpWorkflow.sendPost<BasicResponse>({
+    public sendEmbededMessage = async (threadId: Safe<string>, content: Safe<string>, embed: Embed, messageSettings?: MessageSettings): Promise<ImplementaryResponses.SendMessageResponse> => {
+        return await this.__httpWorkflow.sendPost<ImplementaryResponses.SendMessageResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/message`,
+            body: JSON.stringify({
+                type: 0,
+                content: content,
+                attachedObject: {
+                    objectId: embed.objectId,
+                    objecttype: embed.objectType,
+                    link: embed.link,
+                    title: embed.title,
+                    content: embed.content,
+                    mediaList: embed.mediaList ? [100, embed.mediaList, null] : null
+                },
+                clientRefId: STATIC_CLIENT_REFERENCE_ID,
+                timestamp: Date.now(),
+                uid: this.__accountInfo.uid,
+                extensions: {mentionedArray: messageSettings?.mentionedArray},
+                replyMessageId: messageSettings?.repliedMessageId
+            })
+        });
+    };
+
+    public sendSticker = async (threadId: Safe<string>, stickerId: Safe<string>): Promise<ImplementaryResponses.SendMessageResponse> => {
+        return await this.__httpWorkflow.sendPost<ImplementaryResponses.SendMessageResponse>({
             path: `/x${this.__ndcId}/s/chat/thread/${threadId}/message`,
             body: JSON.stringify({
                 type: 3,
                 stickerId: stickerId,
                 content: null,
-                clientRefId: Math.floor(Date.now() / 10) % 1000000000,
+                clientRefId: STATIC_CLIENT_REFERENCE_ID,
                 timestamp: Date.now()
             })
         });
     };
     
-    public sendImage = async (mediaArguments: MediaArguments): Promise<BasicResponse> => {
-        return await this.__httpWorkflow.sendPost<BasicResponse>({
+    public sendImage = async (mediaArguments: MediaArguments): Promise<ImplementaryResponses.SendMessageResponse> => {
+        return await this.__httpWorkflow.sendPost<ImplementaryResponses.SendMessageResponse>({
             path: `/x${this.__ndcId}/s/chat/thread/${mediaArguments.threadId}/message`,
             body: JSON.stringify({
                 type: 0,
@@ -418,23 +439,95 @@ export class AminoDorksNDC implements BasicClient {
                 mediaUhqEnabled: true,
                 mediaUploadValue: mediaArguments.file.toString('base64'),
                 content: null,
-                clientRefId: Math.floor(Date.now() / 10) % 1000000000,
+                clientRefId: STATIC_CLIENT_REFERENCE_ID,
                 timestamp: Date.now()
             })
         });
     };
 
-    public sendAudio = async (mediaArguments: MediaArguments): Promise<BasicResponse> => {
-        return await this.__httpWorkflow.sendPost<BasicResponse>({
+    public sendAudio = async (mediaArguments: MediaArguments): Promise<ImplementaryResponses.SendMessageResponse> => {
+        return await this.__httpWorkflow.sendPost<ImplementaryResponses.SendMessageResponse>({
             path: `/x${this.__ndcId}/s/chat/thread/${mediaArguments.threadId}/message`,
             body: JSON.stringify({
                 type: 2,
                 mediaType: 110,
                 mediaUploadValue: mediaArguments.file.toString('base64'),
                 content: null,
-                clientRefId: Math.floor(Date.now() / 10) % 1000000000,
+                clientRefId: STATIC_CLIENT_REFERENCE_ID,
                 timestamp: Date.now()
             })
+        });
+    };
+
+    public deleteMessage = async (threadId: Safe<string>, messageId: Safe<string>): Promise<BasicResponse> => {
+        return this.__httpWorkflow.sendDelete<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/message/${messageId}`
+        });
+    };
+
+    public deleteMessageAsAdmin = async (threadId: Safe<string>, messageId: Safe<string>, reason: Safe<string> = SIGNATURE_STUB): Promise<BasicResponse> => {
+        return this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/message/${messageId}/admin`,
+            body: JSON.stringify({
+                adminOpName: 102,
+                adminOpNote: {content: reason},
+                timestamp: Date.now()
+            })
+        });
+    };
+
+    public editChatThread = async (threadId: Safe<string>, builder: EditChatThreadBuilder): Promise<ImplementaryResponses.GetChatThreadResponse> => {
+        return await this.__httpWorkflow.sendPost<ImplementaryResponses.GetChatThreadResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}`,
+            body: JSON.stringify({
+                timestamp: Date.now(),
+                title: builder.title,
+                content: builder.content,
+                icon: builder.icon,
+                keywords: builder.keywords,
+                extensions: builder.extensions
+            })
+        });
+    };
+
+    public setChatThreadBackground = async (threadId: Safe<string>, background: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/member/${this.__accountInfo.uid}/background`,
+            body: JSON.stringify({
+                media: [100, background, null],
+                timestamp: Date.now()
+            })
+        });
+    };
+
+    public addCoHosts = async (threadId: Safe<string>, userIds: Safe<string[]>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/co-host`,
+            body: JSON.stringify({
+                uidList: userIds,
+                timestamp: Date.now()
+            })
+        });
+    };
+
+    public setViewOnly = async (editingArguments: Safe<EditChatArguments>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${editingArguments.threadId}/view-only/${editingArguments.status}`,
+            contentType: 'application/x-www-form-urlencoded'
+        });
+    };
+
+    public setCanInvite = async (editingArguments: Safe<EditChatArguments>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${editingArguments.threadId}/members-can-invite/${editingArguments.status}`,
+            contentType: 'application/x-www-form-urlencoded'
+        });
+    };
+
+    public setCanTip(editingArguments: Safe<EditChatArguments>): Promise<BasicResponse> {
+        return this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${editingArguments.threadId}/tipping-perm-status/${editingArguments.status}`,
+            contentType: 'application/x-www-form-urlencoded'
         });
     };
 };

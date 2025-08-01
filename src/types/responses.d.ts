@@ -17,13 +17,13 @@ export namespace ImplementaryResponses {
         threadList: ChatThread[];
     };
 
-    export interface GetChatThreadRespones extends BasicResponse {
+    export interface GetChatThreadResponse extends BasicResponse {
         thread: ChatThread;
-    }
+    };
 
     export interface GetChatThreadUsersResponse extends BasicResponse {
         memberList: UserProfile[];
-    }
+    };
 
     export interface GetChatThreadMessagesResponse extends BasicResponse {
         messageList: Message[];
@@ -33,17 +33,21 @@ export namespace ImplementaryResponses {
         };
     };
 
+    export interface SendMessageResponse extends BasicResponse {
+        message: Message;
+    };
+
     export interface GetCreateBlogResponse extends BasicResponse {
         blog: Blog;
     };
 
     export interface GetCreateWikiResponse extends BasicResponse {
         item: Item;
-    }
+    };
 
     export interface GetCommentsResponse extends BasicResponse {
         commentList: Comment[];
-    }
+    };
 
 };
 
@@ -121,5 +125,5 @@ export namespace NDCResponses {
 
     export interface GetOnlineUsersResponse extends GetUserProfilesResponse {
         userProfileCount: number;
-    }
+    };
 };

@@ -313,4 +313,4 @@ export interface Comment {
   createdTime: string;
   subcommentsCount: number;
   type: number;
-}
+};
