@@ -1,7 +1,7 @@
 <div align="center">
     <h1>AminoDorksTS</h1>
     <a href="https://t.me/aminodorks"><img src="https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram"></a>
-    <a href="https://www.npmjs.com/package/aminodorks"><img src="https://img.shields.io/badge/NPM-%23CB3837.svg?style=for-the-badge&logo=npm&logoColor=white" alt="NPM"></a>
+    <a href="https://www.npmjs.com/package/amino.dorks"><img src="https://img.shields.io/badge/NPM-%23CB3837.svg?style=for-the-badge&logo=npm&logoColor=white" alt="NPM"></a>
 </div>
 <div align="center">
     <img src="https://img.shields.io/npm/dm/amino.dorks" alt="Downloads">
