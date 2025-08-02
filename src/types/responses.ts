@@ -1,5 +1,5 @@
-import { Message } from 'frida';
-import { Account, Blog, ChatThread, Comment, Community, InviteCode, Item, LotteryLog, TransactionData, UserInfoInCommunity, UserProfile, Wallet } from './additional';
+/* eslint-disable @typescript-eslint/no-namespace */
+import { Account, Blog, ChatThread, Comment, Community, InviteCode, Item, LinkInfo, LotteryLog, Message, TransactionData, UserInfoInCommunity, UserProfile, Wallet } from './additional';
 
 export interface BasicResponse {
     ['api:statuscode']: number;

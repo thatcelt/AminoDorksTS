@@ -241,7 +241,7 @@ export interface LotteryLog {
     objectType: null;
 };
 
-interface ChatThread {
+export interface ChatThread {
   uid: string;
   membersQuota: number;
   membersSummary: {uid: string, role: number, nickname: string, icon: string}[];
