@@ -4,8 +4,8 @@
     <a href="https://www.npmjs.com/package/aminodorks"><img src="https://img.shields.io/badge/NPM-%23CB3837.svg?style=for-the-badge&logo=npm&logoColor=white" alt="NPM"></a>
 </div>
 <div align="center">
-    <img src="https://img.shields.io/npm/dm/aminodorks" alt="Downloads">
-    <img src="https://img.shields.io/npm/v/aminodorks.svg" alt="Version">
+    <img src="https://img.shields.io/npm/dm/amino.dorks" alt="Downloads">
+    <img src="https://img.shields.io/npm/v/amino.dorks.svg" alt="Version">
     <h2>AminoDorksTS is a TypeScript library that interacts with the AminoApps API.</h2>
 </div>
 
@@ -38,7 +38,7 @@ To get started with AminoDorks, follow these steps:
 1. Initialize npm package: `npm init`
 2. Install TypeScript: `npm i -g typescript`
 3. Initialize TypeScript config and configure it: `tsc --init`
-4. Install package via npm: `npm i aminodorks`
+4. Install package via npm: `npm i amino.dorks`
 5. Get your individual API_KEY from our [Telegram Bot](https://t.me/aminodorks_bot)
 
 ## Usage
@@ -46,7 +46,7 @@ To get started with AminoDorks, follow these steps:
 ### Basic authorization
 
 ```typescript
-import { AminoDorks } from 'aminodorks';
+import { AminoDorks } from 'amino.dorks';
 
 const main = async () => {
     const aminoDorks = new AminoDorks('API_KEY');
@@ -60,7 +60,7 @@ main();
 ### Actions in other communities
 
 ```typescript
-import { AminoDorks } from 'aminodorks';
+import { AminoDorks } from 'amino.dorks';
 
 const main = async () => {
     const aminoDorks = new AminoDorks('API_KEY');
