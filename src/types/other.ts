@@ -86,3 +86,16 @@ export interface EditChatArguments {
     threadId: Safe<string>;
     status: Safe<ChatThreadStatus>;
 };
+
+export interface EditProfileBuilder {
+    nickname?: string;
+    icon?: string;
+    content?: string;
+    extensions?: {
+        style?: {
+            backgroundMediaList?: string;
+            backgroundColor?: string;
+        },
+        defaultBubbleId?: string;
+    };
+}

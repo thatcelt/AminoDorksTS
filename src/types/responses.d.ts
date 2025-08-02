@@ -49,6 +49,10 @@ export namespace ImplementaryResponses {
         commentList: Comment[];
     };
 
+    export interface GetUserProfilesResponse extends BasicResponse {
+        userProfileList: UserProfile[]
+    };
+
 };
 
 export namespace GlobalResponses {
@@ -106,10 +110,6 @@ export namespace NDCResponses {
         communityInvitation: InviteCode;
     };
 
-    export interface GetUserProfilesResponse extends BasicResponse {
-        userProfileList: UserProfile[]
-    };
-
     export interface PlayLotteryResponse extends BasicResponse {
         lotteryLog: LotteryLog;
         wallet: Wallet;
@@ -123,7 +123,7 @@ export namespace NDCResponses {
         itemList: Item[];
     };
 
-    export interface GetOnlineUsersResponse extends GetUserProfilesResponse {
+    export interface GetOnlineUsersResponse extends ImplementaryResponses.GetUserProfilesResponse {
         userProfileCount: number;
     };
 };

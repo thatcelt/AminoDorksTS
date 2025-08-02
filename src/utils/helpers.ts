@@ -2,6 +2,11 @@ import { randomBytes, createHash, createHmac } from 'crypto';
 
 import { CRYPTO_KEYS, GENERATORS_URL } from '../constants';
 import { MayNull, Safe, SessionData } from '../types';
+import { v4 } from 'uuid';
+
+export const generateTransactionId = () => {
+    return v4({ random: Uint8Array.from(Buffer.from(randomBytes(16).toString('hex'), 'hex')) })
+}
 
 export const decodeSession = (session: Safe<string>): MayNull<SessionData> => {
     let base64Str = session.replace(/[-+]/g, (m) => m === '-' ? '+' : '-');

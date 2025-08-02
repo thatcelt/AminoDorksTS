@@ -1,4 +1,4 @@
-import { BASE_HEADERS, BASE_URL } from '../constants';
+import { BASE_HEADERS, BASE_URL, SUCCESS_STATUS_CODES } from '../constants';
 import { Defined, MayUndefined, PostRequestCfg, Safe, StructuredHeaders } from '../types';
 import { BasicResponse } from '../types/responses';
 import { generateECDSA, generateHMAC, generateHMACFromBuffer } from '../utils/helpers';
@@ -29,6 +29,8 @@ export class HttpWorkflow {
             headers: this.__localHeaders
         });
 
+        if (!SUCCESS_STATUS_CODES.includes(response.status)) throw new Error(await response.text());
+
         return (await response.json()) as T;
     };
 
@@ -37,6 +39,8 @@ export class HttpWorkflow {
             method: 'DELETE',
             headers: this.__localHeaders
         });
+
+        if (!SUCCESS_STATUS_CODES.includes(response.status)) throw new Error(await response.text());
 
         return (await response.json()) as T;
     }
@@ -47,6 +51,8 @@ export class HttpWorkflow {
             headers: await this.__configureHeaders(config.body, config.contentType),
             body: config.body
         });
+
+        if (!SUCCESS_STATUS_CODES.includes(response.status)) throw new Error(await response.text());
 
         return (await response.json()) as T;
     };
@@ -61,6 +67,8 @@ export class HttpWorkflow {
             method: 'POST',
             headers: configuredHeaders
         });
+
+        if (!SUCCESS_STATUS_CODES.includes(response.status)) throw new Error(await response.text());
         
         return (await response.json()) as T;
     }

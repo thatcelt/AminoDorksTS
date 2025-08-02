@@ -1,6 +1,6 @@
-import { ChatThreadSettings, EditChatArguments, EditChatThreadBuilder, Embed, MessageSettings, MessageTypes } from '../types/other';
+import { ChatThreadSettings, EditChatArguments, EditChatThreadBuilder, EditProfileBuilder, Embed, MessageSettings, MessageTypes } from '../types/other';
 import { BasicResponse, ImplementaryResponses, NDCResponses } from '../types/responses';
-import { CommentsSorting } from '../types/types';
+import { CommentsSorting, MembersType } from '../types/types';
 
 export interface BasicClient {
     getUserInfo(userId: Safe<string>): Promise<ImplementaryResponses.GetUserInfoResponse>;
@@ -32,18 +32,15 @@ export interface BasicClient {
     setViewOnly(editingArguments: Safe<EditChatArguments>): Promise<BasicResponse>;
     setCanInvite(editingArguments: Safe<EditChatArguments>): Promise<BasicResponse>;
     setCanTip(editingArguments: Safe<EditChatArguments>): Promise<BasicResponse>;
-    // tipCoinsBlog(coins: Safe<number>, blogId: Safe<string>): Promise<BasicResponse>;
-    // tipCoinsChatThread(coins: Safe<number>, threadId: Safe<string>): Promise<BasicResponse>;
-    // follow(userIds: Safe<string[]>): Promise<BasicResponse>;
-    // unfollow(userId: Safe<string>): Promise<BasicResponse>;
-    // editProfile(): Promise<BasicResponse>;
-    // commentWall(content: Safe<string>, userId: Safe<string>, repliedCommentId: MayUndefined<string>): Promise<BasicResponse>;
-    // commentPost(content: Safe<string>, objectId: Safe<string>, postType: Safe<PostTypes>, repliedCommentId: MayUndefined<string>): Promise<BasicResponse>;
-    // deleteWallComment(commentId: Safe<string>, userId: Safe<string>): Promise<BasicResponse>;
-    // likePost(objectId: Safe<string>, postType: Safe<PostTypes>): Promise<BasicResponse>;
-    // unlikePost(objectId: Safe<string>, postType: Safe<PostTypes>): Promise<BasicResponse>;
-    // likeMultipleBlogs(blogIds: Safe<string[]>): Promise<BasicResponse>;
-    // getAllUsers(usersType: Safe<MembersType>, start: Safe<number>, size: Safe<number>): Promise<BasicResponse>;
-    // transferHostRequest(threadId: Safe<string>, userId: Safe<string>): Promise<BasicResponse>;
-    // transferHostAccept(threadId: Safe<string>, requestId: Safe<string>): Promise<BasicResponse>;
+    tipCoinsBlog(coins: Safe<number>, blogId: Safe<string>): Promise<BasicResponse>;
+    tipCoinsChatThread(coins: Safe<number>, threadId: Safe<string>): Promise<BasicResponse>;
+    follow(userIds: Safe<string[]>): Promise<BasicResponse>;
+    unfollow(userId: Safe<string>): Promise<BasicResponse>;
+    editProfile(builder: EditProfileBuilder): Promise<BasicResponse>;
+    sendWallComment(content: Safe<string>, userId: Safe<string>, repliedCommentId: MayUndefined<string>): Promise<BasicResponse>;
+    sendPostComment(content: Safe<string>, objectId: Safe<string>, postType: Safe<PostTypes>, repliedCommentId: MayUndefined<string>): Promise<BasicResponse>;
+    likeMultipleBlogs(blogIds: Safe<string[]>): Promise<BasicResponse>;
+    getAllUsers(usersType: Safe<MembersType>, start: Safe<number>, size: Safe<number>): Promise<BasicResponse>;
+    transferHostRequest(threadId: Safe<string>, userIds: Safe<string[]>): Promise<BasicResponse>;
+    transferHostAccept(threadId: Safe<string>, requestId: Safe<string>): Promise<BasicResponse>;
 };

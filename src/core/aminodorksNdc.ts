@@ -1,11 +1,12 @@
 import { GLOBAL_TIMEZONE, INVITE_CODE_DEFAULT_DURATION, SIGNATURE_STUB, STATIC_CLIENT_REFERENCE_ID } from '../constants';
-import { Safe } from '../types';
+import { MayUndefined, Safe } from '../types';
 import { InviteCode, UserProfile } from '../types/additional';
 import { BasicResponse, ImplementaryResponses, NDCResponses } from '../types/responses';
-import { AllowRejoin, BlogBuilder, ChatThreadSettings, EditChatArguments, EditChatThreadBuilder, Embed, FollowingArguments, MediaArguments, MessageSettings, MessageTypes, OnlineStatus, Timer, WikiBuilder } from '../types/other';
+import { AllowRejoin, BlogBuilder, ChatThreadSettings, EditChatArguments, EditChatThreadBuilder, EditProfileBuilder, Embed, FollowingArguments, MediaArguments, MessageSettings, MessageTypes, OnlineStatus, Timer, WikiBuilder } from '../types/other';
 import { HttpWorkflow } from './httpworkflow';
-import { ChatThreadTypes, CommentsSorting, PostTypes } from '../types/types';
+import { ChatThreadTypes, CommentsSorting, MembersType, PostTypes } from '../types/types';
 import { BasicClient } from './basicClient';
+import { generateTransactionId } from '../utils/helpers';
 
 export class AminoDorksNDC implements BasicClient {
     private readonly __httpWorkflow: Safe<HttpWorkflow>;
@@ -41,8 +42,8 @@ export class AminoDorksNDC implements BasicClient {
         });
     };
 
-    public getInfluencers = async (): Promise<NDCResponses.GetUserProfilesResponse> => {
-        return await this.__httpWorkflow.sendGet<NDCResponses.GetUserProfilesResponse>({
+    public getInfluencers = async (): Promise<ImplementaryResponses.GetUserProfilesResponse> => {
+        return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetUserProfilesResponse>({
             path: `/${this.__ndcId}/s/influencer`
         });
     };
@@ -347,14 +348,14 @@ export class AminoDorksNDC implements BasicClient {
         });
     };
 
-    public getUserFollowing = async (followingArguments: FollowingArguments): Promise<NDCResponses.GetUserProfilesResponse> => {
-        return await this.__httpWorkflow.sendGet<NDCResponses.GetUserProfilesResponse>({
+    public getUserFollowing = async (followingArguments: FollowingArguments): Promise<ImplementaryResponses.GetUserProfilesResponse> => {
+        return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetUserProfilesResponse>({
             path: `/x${this.__ndcId}/s/user-profile/${followingArguments.userId}/joined?start=${followingArguments.start}&size=${followingArguments.size}`
         });
     };
 
-    public getUserFollowers = async (followingArguments: FollowingArguments): Promise<NDCResponses.GetUserProfilesResponse> => {
-        return await this.__httpWorkflow.sendGet<NDCResponses.GetUserProfilesResponse>({
+    public getUserFollowers = async (followingArguments: FollowingArguments): Promise<ImplementaryResponses.GetUserProfilesResponse> => {
+        return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetUserProfilesResponse>({
             path: `/x${this.__ndcId}/s/user-profile/${followingArguments.userId}/member?start=${followingArguments.start}&size=${followingArguments.size}`
         });   
     };
@@ -524,10 +525,126 @@ export class AminoDorksNDC implements BasicClient {
         });
     };
 
-    public setCanTip(editingArguments: Safe<EditChatArguments>): Promise<BasicResponse> {
-        return this.__httpWorkflow.sendPostWithoutBody<BasicResponse>({
+    public setCanTip = async (editingArguments: Safe<EditChatArguments>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPostWithoutBody<BasicResponse>({
             path: `/x${this.__ndcId}/s/chat/thread/${editingArguments.threadId}/tipping-perm-status/${editingArguments.status}`,
             contentType: 'application/x-www-form-urlencoded'
+        });
+    };
+
+    public tipCoinsBlog = async (coins: Safe<number>, blogId: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/blog/${blogId}/tipping`,
+            body: JSON.stringify({
+                coins: Math.abs(coins),
+                tippingContext: {transactionId: generateTransactionId()},
+                timestamp: Date.now()
+            })
+        });
+    };
+
+    public tipCoinsChatThread = async (coins: Safe<number>, threadId: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/tipping`,
+            body: JSON.stringify({
+                coins: Math.abs(coins),
+                tippingContext: {transactionId: generateTransactionId()},
+                timestamp: Date.now()
+            })
+        });
+    };
+
+    public follow = async (userIds: Safe<string[]>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/user-profile/${this.__accountInfo.uid}/joined`,
+            body: JSON.stringify({
+                targetUidList: userIds,
+                timestamp: Date.now()
+            })
+        });
+    };
+
+    public unfollow = async (userId: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendDelete<BasicResponse>({
+            path: `/x${this.__ndcId}/s/user-profile/${this.__accountInfo.uid}/joined/${userId}`
+        })
+    };
+
+    public editProfile = async (builder: EditProfileBuilder): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/user-profile/${this.__accountInfo.uid}`,
+            body: JSON.stringify({
+                timestamp: Date.now(),
+                nickname: builder.nickname,
+                icon: builder.icon,
+                content: builder.content,
+                extensions: {
+                    style: {
+                        backgroundMediaList: [[100, builder.extensions?.style?.backgroundMediaList, null, null, null]],
+                        backgroundColor: builder.extensions?.style?.backgroundColor
+                    },
+                    defaultBubbleId: builder.extensions?.defaultBubbleId
+                }
+            })
+        });
+    };
+
+    public sendWallComment = async (content: Safe<string>, userId: Safe<string>, repliedCommentId?: MayUndefined<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/user-profile/${userId}/comment`,
+            body: JSON.stringify({
+                content: content,
+                type: 0,
+                eventSource: 'UserProfileView',
+                respondTo: repliedCommentId,
+                timestamp: Date.now()
+            })
+        });
+    };
+
+    public sendPostComment = async (content: Safe<string>, objectId: Safe<string>, postType: Safe<PostTypes>, repliedCommentId: MayUndefined<string>): Promise<BasicResponse> => {
+        return this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/${postType}/${objectId}/comment`,
+            body: JSON.stringify({
+                content: content,
+                type: 0,
+                eventSource: 'PostDetailView',
+                respondTo: repliedCommentId,
+                timestamp: Date.now()
+            })
+        });
+    };
+
+    public likeMultipleBlogs = async (blogIds: Safe<string[]>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/feed/vote`,
+            body: JSON.stringify({
+                value: 4,
+                targetIdList: blogIds,
+                timestamp: Date.now()
+            })
+        });
+    };
+
+    public getAllUsers = async (usersType: Safe<MembersType> = 'recent', start: Safe<number> = 0, size: Safe<number> = 25): Promise<ImplementaryResponses.GetUserProfilesResponse> => {
+        return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetUserProfilesResponse>({
+            path: `/x${this.__ndcId}/s/user-profile?type=${usersType}&start=${start}&size=${size}`
+        });
+    };
+
+    public transferHostRequest = async (threadId: Safe<string>, userIds: Safe<string[]>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/transfer-organizer`,
+            body: JSON.stringify({
+                uidList: userIds,
+                timestamp: Date.now()
+            })
+        });
+    };
+
+    public transferHostAccept(threadId: Safe<string>, requestId: Safe<string>): Promise<BasicResponse> {
+        return this.__httpWorkflow.sendPostWithoutBody<BasicResponse>({
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/transfer-organizer/${requestId}/accept`
         });
     };
 };
