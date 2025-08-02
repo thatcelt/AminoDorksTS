@@ -13,7 +13,7 @@ export interface BasicClient {
     inviteToChatThread(threadId: Safe<string>, userIds: Safe<string[]>): Promise<BasicResponse>;
     kickFromChatThread(threadId: Safe<string>, userId: Safe<string>, allowRejoin: Safe<boolean>): Promise<BasicResponse>;
     getChatThreadMessages(threadId: Safe<string>, size: Safe<number>): Promise<BasicResponse>;
-    getChatThreadMessagesAfter(threadId: Safe<string>, size: Safe<number>, pageToken: Safe<string>): Promise<BasicResponse>;
+    getChatThreadMessagesPage(threadId: Safe<string>, size: Safe<number>, pageToken: Safe<string>): Promise<BasicResponse>;
     getUserFollowing(followingArguments: FollowingArguments): Promise<NDCResponses.GetUserProfilesResponse>;
     getUserFollowers(followingArguments: FollowingArguments): Promise<BasicResponse>;
     getBlogInfo(blogId: Safe<string>): Promise<ImplementaryResponses.GetCreateBlogResponse>;

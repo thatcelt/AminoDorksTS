@@ -1,5 +1,5 @@
 import { GLOBAL_TIMEZONE, INVITE_CODE_DEFAULT_DURATION, SIGNATURE_STUB, STATIC_CLIENT_REFERENCE_ID } from '../constants';
-import { MayUndefined, Safe } from '../types';
+import { MayNull, Safe } from '../types';
 import { InviteCode, UserProfile } from '../types/additional';
 import { BasicResponse, ImplementaryResponses, NDCResponses } from '../types/responses';
 import { AllowRejoin, BlogBuilder, ChatThreadSettings, EditChatArguments, EditChatThreadBuilder, EditProfileBuilder, Embed, FollowingArguments, MediaArguments, MessageSettings, MessageTypes, OnlineStatus, Timer, WikiBuilder } from '../types/other';
@@ -159,6 +159,18 @@ export class AminoDorksNDC implements BasicClient {
     public getPublicChatThreads = async (start: Safe<number> = 0, size: Safe<number> = 25, type: Safe<ChatThreadTypes> = 'recommended'): Promise<ImplementaryResponses.GetChatThreadsResponse> => {
         return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetChatThreadsResponse>({
             path: `/x${this.__ndcId}/s/chat/thread?type=public-all&filterType=${type}&start=${start}&size=${size}`
+        });
+    };
+
+    public getPublicBlogs = async (start: Safe<number> = 0, size: Safe<number> = 25): Promise<NDCResponses.GetPublicBlogsResponse> => {
+        return await this.__httpWorkflow.sendGet<NDCResponses.GetPublicBlogsResponse>({
+            path: `/x${this.__ndcId}/s/feed/blog-all?pagingType=t&start=${start}&size=${size}`
+        });
+    };
+
+    public getPublicBlogsPage = async (pageToken: Safe<string>, size: Safe<number> = 25): Promise<NDCResponses.GetPublicBlogsResponse> => {
+        return await this.__httpWorkflow.sendGet<NDCResponses.GetPublicBlogsResponse>({
+            path: `/x${this.__ndcId}/s/feed/blog-all?pagingType=t&pageToken=${pageToken}&size=${size}`
         });
     };
 
@@ -342,7 +354,7 @@ export class AminoDorksNDC implements BasicClient {
         });
     };
 
-    public getChatThreadMessagesAfter = async (threadId: Safe<string>, size: Safe<number>, pageToken: Safe<string>): Promise<ImplementaryResponses.GetChatThreadMessagesResponse> => {
+    public getChatThreadMessagesPage = async (threadId: Safe<string>, size: Safe<number>, pageToken: Safe<string>): Promise<ImplementaryResponses.GetChatThreadMessagesResponse> => {
         return await this.__httpWorkflow.sendGet<ImplementaryResponses.GetChatThreadMessagesResponse>({
             path: `/x${this.__ndcId}/s/chat/thread/${threadId}/message?v=2&pagingType=t&pageToken=${pageToken}&size=${size}`
         });
@@ -580,7 +592,7 @@ export class AminoDorksNDC implements BasicClient {
                 content: builder.content,
                 extensions: {
                     style: {
-                        backgroundMediaList: [[100, builder.extensions?.style?.backgroundMediaList, null, null, null]],
+                        backgroundMediaList: builder.extensions?.style?.backgroundMediaList ? [[100, builder.extensions?.style?.backgroundMediaList, null, null, null]] : null,
                         backgroundColor: builder.extensions?.style?.backgroundColor
                     },
                     defaultBubbleId: builder.extensions?.defaultBubbleId
@@ -589,7 +601,7 @@ export class AminoDorksNDC implements BasicClient {
         });
     };
 
-    public sendWallComment = async (content: Safe<string>, userId: Safe<string>, repliedCommentId?: MayUndefined<string>): Promise<BasicResponse> => {
+    public sendWallComment = async (content: Safe<string>, userId: Safe<string>, repliedCommentId: MayNull<string> = null): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
             path: `/x${this.__ndcId}/s/user-profile/${userId}/comment`,
             body: JSON.stringify({
@@ -602,7 +614,7 @@ export class AminoDorksNDC implements BasicClient {
         });
     };
 
-    public sendPostComment = async (content: Safe<string>, objectId: Safe<string>, postType: Safe<PostTypes>, repliedCommentId: MayUndefined<string>): Promise<BasicResponse> => {
+    public sendPostComment = async (content: Safe<string>, objectId: Safe<string>, postType: Safe<PostTypes>, repliedCommentId: MayNull<string> = null): Promise<BasicResponse> => {
         return this.__httpWorkflow.sendPost<BasicResponse>({
             path: `/x${this.__ndcId}/s/${postType}/${objectId}/comment`,
             body: JSON.stringify({

@@ -126,4 +126,12 @@ export namespace NDCResponses {
     export interface GetOnlineUsersResponse extends ImplementaryResponses.GetUserProfilesResponse {
         userProfileCount: number;
     };
+
+    export interface GetPublicBlogsResponse extends BasicResponse {
+        blogList: Blog[];
+        paging: {
+            nextPageToken: string;
+            prevPageToken: string;
+        };
+    };
 };
