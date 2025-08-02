@@ -5,6 +5,7 @@
     /* Modules */
     "module": "nodenext",
     "resolveJsonModule": true,
+    "moduleDetection": "force",
 
     /* JavaScript Support */
     "allowJs": true,
@@ -15,6 +16,8 @@
     /* Interop Constraints */
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "declarationMap": true,
 
     /* Type Checking */
     "strict": true,
@@ -24,5 +27,5 @@
   },
   "ts-node": {"esm": true},
   "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist"]
 }

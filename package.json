@@ -1,27 +1,46 @@
 {
-  "name": "aminodorksts",
+  "name": "aminodorks",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": false,
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc"
   },
+  "files": [
+    "README.MD",
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/thatcelt/AminoDorksTS.git"
   },
   "keywords": [
     "amino",
-    "aminoapps"
+    "aminoapps",
+    "social",
+    "bots",
+    "userbots",
+    "aminodorks",
+    "amino.dorks",
+    "aminodorksts",
+    "typescript",
+    "wrapper",
+    "api",
+    "signature"
   ],
-  "author": "celt",
+  "author": "celt_is_god",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/thatcelt/AminoDorksTS/issues"
   },
   "homepage": "https://github.com/thatcelt/AminoDorksTS#readme",
-  "description": "",
+  "description": "AminoDorksTS is a TypeScript library that interacts with the AminoApps API.",
   "dependencies": {
     "crypto": "^1.0.1",
     "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "@types/node": "^24.0.3"
   }
 }

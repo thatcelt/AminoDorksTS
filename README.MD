@@ -1,7 +1,14 @@
-# AminoDorksTS
-================
+<div align="center">
+    <h1>AminoDorksTS</h1>
+    <a href="https://t.me/aminodorks"><img src="https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram"></a>
+    <a href="https://www.npmjs.com/package/aminodorks"><img src="https://img.shields.io/badge/NPM-%23CB3837.svg?style=for-the-badge&logo=npm&logoColor=white" alt="NPM"></a>
+</div>
+<div align="center">
+    <img src="https://img.shields.io/npm/dm/aminodorks" alt="Downloads">
+    <img src="https://img.shields.io/npm/v/aminodorks.svg" alt="Version">
+    <h2>AminoDorksTS is a TypeScript library that interacts with the AminoApps API.</h2>
+</div>
 
-AminoDorksTS is a TypeScript project that interacts with the AminoApps API.
 
 ## Table of Contents
 -----------------
@@ -16,33 +23,61 @@ AminoDorksTS is a TypeScript project that interacts with the AminoApps API.
 ## Features
 --------
 
-* Authenticate with AminoApps API
-* Send HTTP requests to AminoApps API endpoints
+AminoDorks contains a many features as a library for AminoApps, for example
+* So much methods to interacting with API
+* Generation of special signature from Android with KeyStore bypassing
+* Non-limited requests rate limit for signatures generation
+* Huge priority for creating user bots for stressing
+* Supporting of so much types with API interacting
+* [Fully open source code of server-side](https://github.com/thatcelt/dorks_api)
 
 ## Getting Started
 ---------------
 
-To get started with AminoDorksTS, follow these steps:
-
-1. Clone the repository: `git clone https://github.com/thatcelt/AminoDorksTS.git`
-2. Install dependencies: `npm install`
-3. Set your AminoApps API key as an environment variable: `export API_KEY=your_api_key_here`
+To get started with AminoDorks, follow these steps:
+1. Initialize npm package: `npm init`
+2. Install TypeScript: `npm i -g typescript`
+3. Initialize TypeScript config and configure it: `tsc --init`
+4. Install package via npm: `npm i aminodorks`
+5. Get your individual API_KEY from our [Telegram Bot](https://t.me/aminodorks_bot)
 
 ## Usage
 -----
+### Basic authorization
 
-To use AminoDorksTS, create an instance of the `AminoDorks` class and call its methods:
 ```typescript
 import { AminoDorks } from 'aminodorks';
 
-const aminoDorks = new AminoDorks('your_api_key_here');
-const response = await aminoDorks.authenticate('email@example.com', 'password');
-console.log(response);
+const main = async () => {
+    const aminoDorks = new AminoDorks('API_KEY');
+    const response = await aminoDorks.authenticate('email@example.com', 'password');
+    console.log(`Logged in ${response.account.nickname}`);
+};
+
+main();
 ```
+
+### Actions in other communities
+
+```typescript
+import { AminoDorks } from 'aminodorks';
+
+const main = async () => {
+    const aminoDorks = new AminoDorks('API_KEY');
+    const response = await aminoDorks.authenticate('email@example.com', 'password');
+    
+    const aminoDorksNdc = aminoDorks.setNdcId('NDC_ID') // now we can use this instance for interacting with community
+    await aminoDorksNdc.playLottery() // for example, for play lottery to get some coins
+};
+
+main();
+```
+
 ## API Documentation
 -----------------
 
-API documentation is not yet available. Please refer to the source code for more information.
+* In development...
+
 
 ## Contributing
 ------------
@@ -53,5 +88,4 @@ Contributions are welcome! Please submit a pull request with your changes.
 -------
 
 AminoDorksTS is licensed under the MIT License. See LICENSE for more information.
-
-Note: This is a basic template, and you should fill in the details specific to your project.
+If you're will use my generators - write about it to my [DM](https://t.me/celt_is_god)
