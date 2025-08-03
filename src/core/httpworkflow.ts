@@ -13,7 +13,7 @@ export class HttpWorkflow {
     public addAdditionalHeaders = (additionalHeaders: Safe<StructuredHeaders>) => this.__localHeaders = { ...this.__localHeaders, ...additionalHeaders };
 
     private __configureHeaders = async (body: Safe<string | Buffer>, contentType: MayUndefined<string>): Promise<Defined<StructuredHeaders>> => {
-        const configuredHeaders = structuredClone(this.__localHeaders);
+        const configuredHeaders = { ...this.__localHeaders };
 
         configuredHeaders['Content-Length'] = body.length.toString();
         configuredHeaders['NDC-MSG-SIG'] = typeof body === 'string' ? generateHMAC(body) : generateHMACFromBuffer(body);
@@ -23,70 +23,53 @@ export class HttpWorkflow {
         return configuredHeaders;
     };
 
-    public sendRaw = async <T extends BasicResponse>(config: RawRequestCfg) => {
-        const response = await fetch(`${BASE_URL}${config.path}`, {
-            method: 'GET',
-            body: config.body,
-            headers: {
-                ...this.__localHeaders,
-                ...config.additionalHeaders
-            }
-        });
-
-        try {
-            return (await response.json()) as T;
-        } catch {
-            throw new Error(await response.text());
+    private async __handleResponse<T extends BasicResponse>(response: Response): Promise<T> {
+        if (!SUCCESS_STATUS_CODES.includes(response.status)) {
+            throw new Error(`${response.status}: ${await response.text()}`);
         }
-    };
-
-    public sendGet = async <T extends BasicResponse>(config: Pick<PostRequestCfg, 'path'>) =>{
-        const response = await fetch(`${BASE_URL}${config.path}`, {
-            method: 'GET',
-            headers: this.__localHeaders
-        });
-
-        if (!SUCCESS_STATUS_CODES.includes(response.status)) throw new Error(await response.text());
-
-        return (await response.json()) as T;
-    };
-
-    public sendDelete = async <T extends BasicResponse>(config: Pick<PostRequestCfg, 'path'>) => {
-        const response = await fetch(`${BASE_URL}${config.path}`, {
-            method: 'DELETE',
-            headers: this.__localHeaders
-        });
-
-        if (!SUCCESS_STATUS_CODES.includes(response.status)) throw new Error(await response.text());
 
         return (await response.json()) as T;
     }
 
-    public sendPost = async <T extends BasicResponse>(config: PostRequestCfg) => {
-        const response = await fetch(`${BASE_URL}${config.path}`, {
+    public sendRaw = async <T extends BasicResponse>(config: RawRequestCfg): Promise<T> => {
+        return await this.__handleResponse<T>(await fetch(`${BASE_URL}${config.path}`, {
+            method: 'GET',
+            body: config.body,
+            headers: { ...this.__localHeaders, ...config.additionalHeaders }
+        }));
+    };
+
+    public sendGet = async <T extends BasicResponse>(config: Pick<PostRequestCfg, 'path'>): Promise<T> =>{
+        return await this.__handleResponse<T>(await fetch(`${BASE_URL}${config.path}`, {
+            method: 'GET',
+            headers: this.__localHeaders
+        }));
+    };
+
+    public sendDelete = async <T extends BasicResponse>(config: Pick<PostRequestCfg, 'path'>): Promise<T> => {
+        return await this.__handleResponse<T>(await fetch(`${BASE_URL}${config.path}`, {
+            method: 'DELETE',
+            headers: this.__localHeaders
+        }))
+    }
+
+    public sendPost = async <T extends BasicResponse>(config: PostRequestCfg): Promise<T> => {
+        return await this.__handleResponse<T>(await fetch(`${BASE_URL}${config.path}`, {
             method: 'POST',
             headers: await this.__configureHeaders(config.body, config.contentType),
             body: config.body
-        });
-
-        if (!SUCCESS_STATUS_CODES.includes(response.status)) throw new Error(await response.text());
-
-        return (await response.json()) as T;
+        }));
     };
 
-    public sendPostWithoutBody = async <T extends BasicResponse>(config: Omit<PostRequestCfg, 'body'>) => {
+    public sendPostWithoutBody = async <T extends BasicResponse>(config: Omit<PostRequestCfg, 'body'>): Promise<T> => {
         const configuredHeaders = structuredClone(this.__localHeaders);
 
         if (config.contentType) configuredHeaders['Content-Type'] = config.contentType;
         configuredHeaders['Content-Length'] = '0';
 
-        const response = await fetch(`${BASE_URL}${config.path}`, {
+        return await this.__handleResponse<T>(await fetch(`${BASE_URL}${config.path}`, {
             method: 'POST',
             headers: configuredHeaders
-        });
-
-        if (!SUCCESS_STATUS_CODES.includes(response.status)) throw new Error(await response.text());
-        
-        return (await response.json()) as T;
+        }));
     };
 };

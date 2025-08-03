@@ -307,7 +307,8 @@ export class AminoDorksNDC implements BasicClient {
 
     public joinChatThread = async (threadId: Safe<string>): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPostWithoutBody<BasicResponse>({
-            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/member/${this.__accountInfo.uid}`
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/member/${this.__accountInfo.uid}`,
+            contentType: 'application/x-www-form-urlencoded'
         });
     };
 
@@ -566,7 +567,15 @@ export class AminoDorksNDC implements BasicClient {
         });
     };
 
-    public follow = async (userIds: Safe<string[]>): Promise<BasicResponse> => {
+    public follow = async (userId: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPostWithoutBody({
+            path: `/x${this.__ndcId}/s/user-profile/${userId}/member`,
+            contentType: 'application/x-www-form-urlencoded'
+        });
+    };
+
+
+    public followMultiple = async (userIds: Safe<string[]>): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
             path: `/x${this.__ndcId}/s/user-profile/${this.__accountInfo.uid}/joined`,
             body: JSON.stringify({
@@ -656,7 +665,8 @@ export class AminoDorksNDC implements BasicClient {
 
     public transferHostAccept(threadId: Safe<string>, requestId: Safe<string>): Promise<BasicResponse> {
         return this.__httpWorkflow.sendPostWithoutBody<BasicResponse>({
-            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/transfer-organizer/${requestId}/accept`
+            path: `/x${this.__ndcId}/s/chat/thread/${threadId}/transfer-organizer/${requestId}/accept`,
+            contentType: 'application/x-www-form-urlencoded'
         });
     };
 };

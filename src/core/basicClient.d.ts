@@ -34,7 +34,8 @@ export interface BasicClient {
     setCanTip(editingArguments: Safe<EditChatArguments>): Promise<BasicResponse>;
     tipCoinsBlog(coins: Safe<number>, blogId: Safe<string>): Promise<BasicResponse>;
     tipCoinsChatThread(coins: Safe<number>, threadId: Safe<string>): Promise<BasicResponse>;
-    follow(userIds: Safe<string[]>): Promise<BasicResponse>;
+    follow(userId: Safe<string>): Promise<BasicResponse>;
+    followMultiple(userIds: Safe<string[]>): Promise<BasicResponse>;
     unfollow(userId: Safe<string>): Promise<BasicResponse>;
     editProfile(builder: EditProfileBuilder): Promise<BasicResponse>;
     sendWallComment(content: Safe<string>, userId: Safe<string>, repliedCommentId: MayUndefined<string>): Promise<BasicResponse>;

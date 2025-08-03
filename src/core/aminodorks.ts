@@ -32,7 +32,9 @@ export class AminoDorks implements BasicClient {
         process.env.API_KEY = apiKey;
     };
 
-    get accountInfo(): MayUndefined<UserProfile> {
+    get accountInfo(): Safe<UserProfile> {
+        if (!this.__accountInfo) { throw new Error('Account info is not defined'); }
+
         return this.__accountInfo;
     };
 
@@ -64,9 +66,7 @@ export class AminoDorks implements BasicClient {
     };
 
     public setNdcId = (ndcId: Safe<number>): Readonly<AminoDorksNDC> => {
-        if (!this.__accountInfo) { throw new Error('You are not logged in.'); }
-
-        this.__aminodorksNdc = new AminoDorksNDC(this.__httpWorkflow, this.__accountInfo, ndcId);
+        this.__aminodorksNdc = new AminoDorksNDC(this.__httpWorkflow, this.accountInfo, ndcId);
 
         return this.__aminodorksNdc;
     }
@@ -215,7 +215,7 @@ export class AminoDorks implements BasicClient {
         });
     };
 
-    public joinCommunity = async (ndcId: Safe<number>, invitationId: MayUndefined<string>): Promise<BasicResponse> => {
+    public joinCommunity = async (ndcId: Safe<number>, invitationId?: MayUndefined<string>): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
             path: `/x${ndcId}/s/community/join`,
             body: JSON.stringify({
@@ -227,7 +227,8 @@ export class AminoDorks implements BasicClient {
 
     public leaveCommunity = async (ndcId: Safe<number>): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPostWithoutBody<BasicResponse>({
-            path: `/x${ndcId}/s/community/leave`
+            path: `/x${ndcId}/s/community/leave`,
+            contentType: 'application/x-www-form-urlencoded'
         });
     };
 
@@ -288,18 +289,15 @@ export class AminoDorks implements BasicClient {
     }
 
     public joinChatThread = async (threadId: Safe<string>): Promise<BasicResponse> => {
-        if (!this.__accountInfo) throw new Error('You are not logged in.');
-
         return await this.__httpWorkflow.sendPostWithoutBody<BasicResponse>({
-            path: `/g/s/chat/thread/${threadId}/member/${this.__accountInfo.uid}`
+            path: `/g/s/chat/thread/${threadId}/member/${this.accountInfo.uid}`,
+            contentType: 'application/x-www-form-urlencoded'
         });
     };
 
     public leaveChatThread = async (threadId: Safe<string>): Promise<BasicResponse> => {
-        if (!this.__accountInfo) throw new Error('You are not logged in.');
-
         return await this.__httpWorkflow.sendDelete<BasicResponse>({
-            path: `/g/s/chat/thread/${threadId}/member/${this.__accountInfo.uid}`
+            path: `/g/s/chat/thread/${threadId}/member/${this.accountInfo.uid}`
         });
     };
 
@@ -377,8 +375,6 @@ export class AminoDorks implements BasicClient {
     };
 
     public sendMessage = async (threadId: Safe<string>, content: Safe<string>, messageType: Safe<MessageTypes> = 0, messageSettings?: MessageSettings): Promise<ImplementaryResponses.SendMessageResponse> => {
-        if (!this.__accountInfo) { throw new Error('You are not logged in.'); }
-        
         return await this.__httpWorkflow.sendPost<ImplementaryResponses.SendMessageResponse>({
             path: `/g/s/chat/thread/${threadId}/message`,
             body: JSON.stringify({
@@ -387,16 +383,14 @@ export class AminoDorks implements BasicClient {
                 attachedObject: null,
                 clientRefId: STATIC_CLIENT_REFERENCE_ID,
                 timestamp: Date.now(),
-                uid: this.__accountInfo.uid,
+                uid: this.accountInfo.uid,
                 extensions: {mentionedArray: messageSettings?.mentionedArray},
                 replyMessageId: messageSettings?.repliedMessageId
             })
         });
     };
 
-    public sendEmbededMessage = async (threadId: Safe<string>, content: Safe<string>, embed: Embed, messageSettings?: MessageSettings): Promise<ImplementaryResponses.SendMessageResponse> => {
-        if (!this.__accountInfo) { throw new Error('You are not logged in.'); }
-        
+    public sendEmbededMessage = async (threadId: Safe<string>, content: Safe<string>, embed: Embed, messageSettings?: MessageSettings): Promise<ImplementaryResponses.SendMessageResponse> => {        
         return await this.__httpWorkflow.sendPost<ImplementaryResponses.SendMessageResponse>({
             path: `/g/s/chat/thread/${threadId}/message`,
             body: JSON.stringify({
@@ -412,7 +406,7 @@ export class AminoDorks implements BasicClient {
                 },
                 clientRefId: STATIC_CLIENT_REFERENCE_ID,
                 timestamp: Date.now(),
-                uid: this.__accountInfo.uid,
+                uid: this.accountInfo.uid,
                 extensions: {mentionedArray: messageSettings?.mentionedArray},
                 replyMessageId: messageSettings?.repliedMessageId
             })
@@ -494,10 +488,8 @@ export class AminoDorks implements BasicClient {
     };
 
     public setChatThreadBackground = async (threadId: Safe<string>, background: Safe<string>): Promise<BasicResponse> => {
-        if (!this.__accountInfo) { throw new Error('You are not logged in.'); }
-        
         return await this.__httpWorkflow.sendPost<BasicResponse>({
-            path: `/g/s/chat/thread/${threadId}/member/${this.__accountInfo.uid}/background`,
+            path: `/g/s/chat/thread/${threadId}/member/${this.accountInfo.uid}/background`,
             body: JSON.stringify({
                 media: [100, background, null],
                 timestamp: Date.now()
@@ -558,11 +550,16 @@ export class AminoDorks implements BasicClient {
         });
     };
 
-    public follow = async (userIds: Safe<string[]>): Promise<BasicResponse> => {
-        if (!this.__accountInfo) { throw new Error('You are not logged in.'); }
-        
+    public follow = async (userId: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPostWithoutBody({
+            path: `/g/s/user-profile/${userId}/member`,
+            contentType: 'application/x-www-form-urlencoded'
+        });
+    };
+
+    public followMultiple = async (userIds: Safe<string[]>): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
-            path: `/g/s/user-profile/${this.__accountInfo.uid}/joined`,
+            path: `/g/s/user-profile/${this.accountInfo.uid}/joined`,
             body: JSON.stringify({
                 targetUidList: userIds,
                 timestamp: Date.now()
@@ -571,18 +568,14 @@ export class AminoDorks implements BasicClient {
     };
 
     public unfollow = async (userId: Safe<string>): Promise<BasicResponse> => {
-        if (!this.__accountInfo) { throw new Error('You are not logged in.'); }
-        
         return await this.__httpWorkflow.sendDelete<BasicResponse>({
-            path: `/g/s/user-profile/${this.__accountInfo.uid}/joined/${userId}`
-        })
+            path: `/g/s/user-profile/${this.accountInfo.uid}/joined/${userId}`
+        });
     };
 
     public editProfile = async (builder: EditProfileBuilder): Promise<BasicResponse> => {
-        if (!this.__accountInfo) { throw new Error('You are not logged in.'); }
-        
         return await this.__httpWorkflow.sendPost<BasicResponse>({
-            path: `/g/s/user-profile/${this.__accountInfo.uid}`,
+            path: `/g/s/user-profile/${this.accountInfo.uid}`,
             body: JSON.stringify({
                 timestamp: Date.now(),
                 nickname: builder.nickname,
@@ -654,7 +647,8 @@ export class AminoDorks implements BasicClient {
 
     public transferHostAccept(threadId: Safe<string>, requestId: Safe<string>): Promise<BasicResponse> {
         return this.__httpWorkflow.sendPostWithoutBody<BasicResponse>({
-            path: `/g/s/chat/thread/${threadId}/transfer-organizer/${requestId}/accept`
+            path: `/g/s/chat/thread/${threadId}/transfer-organizer/${requestId}/accept`,
+            contentType: 'application/x-www-form-urlencoded'
         });
     };
 };
