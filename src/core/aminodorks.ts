@@ -1,5 +1,5 @@
-import { SIGNATURE_STUB, STATIC_CLIENT_REFERENCE_ID } from '../constants';
-import { MayNull, MayUndefined, Safe } from '../types';
+import { cacheManager, INVALID_SESSION_STATUS_CODE, SIGNATURE_STUB, STATIC_CLIENT_REFERENCE_ID } from '../constants';
+import { CacheEntity, MayNull, MayUndefined, Safe } from '../types';
 import { LinkInfo, UserProfile } from '../types/additional';
 import { AllowRejoin, ChatThreadSettings, EditChatArguments, EditChatThreadBuilder, EditProfileBuilder, Embed, FollowingArguments, MediaArguments, MessageSettings, MessageTypes } from '../types/other';
 import { GlobalResponses, BasicResponse, ImplementaryResponses } from '../types/responses';
@@ -10,7 +10,8 @@ import { BasicClient } from './basicClient';
 import { HttpWorkflow } from './httpworkflow';
 
 export class AminoDorks implements BasicClient {
-    private readonly __deviceId: Safe<string> = generateDeviceId();
+    private __deviceId: Safe<string> = generateDeviceId();
+
     private __accountInfo: MayUndefined<UserProfile>;
     public __aminodorksNdc: AminoDorksNDC | undefined;
 
@@ -50,6 +51,18 @@ export class AminoDorks implements BasicClient {
         });
     };
 
+    private __checkSessionIsValid = async (cacheEntity: Safe<CacheEntity>): Promise<boolean> => {
+        const response = await this.__httpWorkflow.sendRaw<BasicResponse>({
+            method: 'GET',
+            path: `/g/s/user-profile/${cacheEntity.userProfile.uid}`,
+            additionalHeaders: {
+                AUID: cacheEntity.userProfile.uid,
+                NDCAUTH: `sid=${cacheEntity.sessionId}`
+            }
+        });
+        return response['api:statuscode'] != INVALID_SESSION_STATUS_CODE;
+    };
+
     public setNdcId = (ndcId: Safe<number>): Readonly<AminoDorksNDC> => {
         if (!this.__accountInfo) { throw new Error('You are not logged in.'); }
 
@@ -72,7 +85,21 @@ export class AminoDorks implements BasicClient {
         })).linkInfoV2.extensions.linkInfo;
     };
 
-    public authenticate = async (email: Safe<string>, password: Safe<string>): Promise<GlobalResponses.AuthenticateResponse> => {
+    public authenticate = async (email: Safe<string>, password: Safe<string>): Promise<UserProfile> => {
+        const cachedUserData = cacheManager.getFromKey(`${email}-${password}`)
+        
+        if (cachedUserData && await this.__checkSessionIsValid(cachedUserData)) {
+            this.__deviceId = cachedUserData.deviceId;
+            this.__httpWorkflow.addAdditionalHeaders({
+                AUID: cachedUserData.userProfile.uid,
+                NDCAUTH: `sid=${cachedUserData.sessionId}`,
+                NDCDEVICEID: cachedUserData.deviceId
+            });
+            this.__accountInfo = cachedUserData.userProfile;
+            await this.__remadePublicKey(cachedUserData.userProfile.uid);
+            return cachedUserData.userProfile;
+        }
+
         const response = await this.__httpWorkflow.sendPost<GlobalResponses.AuthenticateResponse>({
             path: '/g/s/auth/login',
             body: JSON.stringify({
@@ -88,20 +115,22 @@ export class AminoDorks implements BasicClient {
 
         this.__httpWorkflow.addAdditionalHeaders({ AUID: response.auid, NDCAUTH: `sid=${response.sid}` });
         this.__accountInfo = response.userProfile;
+        cacheManager.addToCache(`${email}-${password}`, { sessionId: response.sid, userProfile: response.userProfile, deviceId: this.__deviceId });
         await this.__remadePublicKey(response.account.uid);
 
-        return response;
+        return response.userProfile;
     };
 
-    public authenticateSession = async (sessionId: Safe<string>): Promise<BasicResponse> => {
+    public authenticateSession = async (sessionId: Safe<string>, deviceId: Safe<string>): Promise<BasicResponse> => {
         const sessionData = decodeSession(sessionId);
 
         if (!sessionData) { throw new Error('Invalid session'); }
         
-        this.__httpWorkflow.addAdditionalHeaders({ AUID: sessionData.userId, NDCAUTH: `sid=${sessionId}` });
+        this.__deviceId = deviceId;
+        this.__httpWorkflow.addAdditionalHeaders({ AUID: sessionData.userId, NDCAUTH: `sid=${sessionId}`, NDCDEVICEID: deviceId });
         this.__accountInfo = (await this.getUserInfo(sessionData.userId)).userProfile;
-        return await this.__remadePublicKey(sessionData.userId);
 
+        return await this.__remadePublicKey(sessionData.userId);
     };
 
     public requestResetPassword = async (email: Safe<string>): Promise<BasicResponse> => {

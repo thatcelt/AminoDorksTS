@@ -1,5 +1,5 @@
 import { BASE_HEADERS, BASE_URL, SUCCESS_STATUS_CODES } from '../constants';
-import { Defined, MayUndefined, PostRequestCfg, Safe, StructuredHeaders } from '../types';
+import { Defined, MayUndefined, PostRequestCfg, Safe, StructuredHeaders, RawRequestCfg } from '../types';
 import { BasicResponse } from '../types/responses';
 import { generateECDSA, generateHMAC, generateHMACFromBuffer } from '../utils/helpers';
 
@@ -21,6 +21,23 @@ export class HttpWorkflow {
         if (contentType) configuredHeaders['Content-Type'] = contentType;
 
         return configuredHeaders;
+    };
+
+    public sendRaw = async <T extends BasicResponse>(config: RawRequestCfg) => {
+        const response = await fetch(`${BASE_URL}${config.path}`, {
+            method: 'GET',
+            body: config.body,
+            headers: {
+                ...this.__localHeaders,
+                ...config.additionalHeaders
+            }
+        });
+
+        try {
+            return (await response.json()) as T;
+        } catch {
+            throw new Error(await response.text());
+        }
     };
 
     public sendGet = async <T extends BasicResponse>(config: Pick<PostRequestCfg, 'path'>) =>{
@@ -71,5 +88,5 @@ export class HttpWorkflow {
         if (!SUCCESS_STATUS_CODES.includes(response.status)) throw new Error(await response.text());
         
         return (await response.json()) as T;
-    }
+    };
 };

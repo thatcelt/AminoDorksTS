@@ -1,4 +1,5 @@
 import { CryptoKeys, Defined, Safe, StructuredHeaders } from './types';
+import { CacheManager } from './utils/cache';
 
 export const BASE_URL: Safe<string> = 'https://service.aminoapps.com/api/v1';
 export const GENERATORS_URL: Safe<string> = 'https://qfhmflnp-3000.euw.devtunnels.ms';
@@ -25,3 +26,6 @@ export const GLOBAL_TIMEZONE: Safe<number> = Math.floor(10800 / 1000);
 export const SIGNATURE_STUB: Safe<string> = 'viva la aminodorks ;3';
 export const STATIC_CLIENT_REFERENCE_ID: Safe<number> = 404354928;
 export const SUCCESS_STATUS_CODES: Safe<number[]> = [200, 201, 204, 206];
+export const INVALID_SESSION_STATUS_CODE = 105;
+export const cacheManager = new CacheManager();
+cacheManager.initCache();

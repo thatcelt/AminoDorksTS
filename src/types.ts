@@ -1,3 +1,5 @@
+import { UserProfile } from './types/additional';
+
 export type Safe<T> = NonNullable<Required<Readonly<T>>>;
 export type Defined<T> = NonNullable<Required<T>>;
 export type MayNull<T> = Readonly<T | null>;
@@ -9,6 +11,13 @@ export interface PostRequestCfg {
     body: Safe<string | Buffer>;
     contentType?: MayUndefined<string>;
 };
+
+export interface RawRequestCfg {
+    method: Safe<string>;
+    path: Safe<string>;
+    additionalHeaders?: Safe<StructuredHeaders>;
+    body?: Safe<string | Buffer>;
+}
 
 export interface SessionData {
     status: Safe<number>;
@@ -23,4 +32,10 @@ export interface CryptoKeys {
     SIGNATURE_KEY: Safe<Uint8Array>;
     DEVICE_ID_KEY: Safe<Uint8Array>;
     DEVICE_LENGTH: Safe<number>;
+};
+
+export interface CacheEntity {
+    sessionId: Safe<string>;
+    deviceId: Safe<string>;
+    userProfile: Safe<UserProfile>
 };
