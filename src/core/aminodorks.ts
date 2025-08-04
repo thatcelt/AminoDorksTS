@@ -44,6 +44,14 @@ export class AminoDorks implements BasicClient {
         return this.__aminodorksNdc;
     };
 
+    public getAllCache = (): CacheEntity[] => {
+        return cacheManager.getAllCache();
+    };
+
+    public deleteFromCache = (key: Safe<string>): void => {
+        cacheManager.deleteFromCache(key);
+    };
+
     private __remadePublicKey = async (userId: Safe<string>): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
             path: '/g/s/security/public_key',
@@ -98,7 +106,9 @@ export class AminoDorks implements BasicClient {
             this.__accountInfo = cachedUserData.userProfile;
             await this.__remadePublicKey(cachedUserData.userProfile.uid);
             return cachedUserData.userProfile;
-        }
+        } else {
+            cacheManager.deleteFromCache(`${email}-${password}`);
+        };
 
         const response = await this.__httpWorkflow.sendPost<GlobalResponses.AuthenticateResponse>({
             path: '/g/s/auth/login',
@@ -115,7 +125,13 @@ export class AminoDorks implements BasicClient {
 
         this.__httpWorkflow.addAdditionalHeaders({ AUID: response.auid, NDCAUTH: `sid=${response.sid}` });
         this.__accountInfo = response.userProfile;
-        cacheManager.addToCache(`${email}-${password}`, { sessionId: response.sid, userProfile: response.userProfile, deviceId: this.__deviceId });
+        cacheManager.addToCache(`${email}-${password}`, {
+            sessionId: response.sid,
+            userProfile: response.userProfile,
+            deviceId: this.__deviceId,
+            email: email,
+            password: password
+        });
         await this.__remadePublicKey(response.account.uid);
 
         return response.userProfile;

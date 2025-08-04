@@ -35,9 +35,15 @@ export class CacheManager {
     };
 
     public deleteFromCache = (key: Safe<string>) => {
-        // i don't care
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete this.__cache[key];
-        fs.writeFileSync(this.__cachePath, JSON.stringify(this.__cache));
+        if (key in this.__cache) {
+            // i don't care
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete this.__cache[key];
+            fs.writeFileSync(this.__cachePath, JSON.stringify(this.__cache));
+        }
+    };
+
+    public getAllCache = (): CacheEntity[] => {
+        return Object.values(this.__cache);
     };
 }

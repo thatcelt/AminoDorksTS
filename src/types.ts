@@ -35,6 +35,8 @@ export interface CryptoKeys {
 };
 
 export interface CacheEntity {
+    email: Safe<string>;
+    password: Safe<string>;
     sessionId: Safe<string>;
     deviceId: Safe<string>;
     userProfile: Safe<UserProfile>
