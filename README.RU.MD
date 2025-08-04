@@ -9,8 +9,8 @@
     <h2>AminoDorksTS это библиотека на TypeScript для взаимодействия с API приложения Amino</h2>
 </div>
 
-##[README on English](https://github.com/thatcelt/AminoDorksTS/blob/main/README.MD)
-##[README на Русском](https://github.com/thatcelt/AminoDorksTS/blob/main/README.RU.MD)
+##[README on English](https://github.com/thatcelt/AminoDorksTS/blob/master/README.MD)
+##[README на Русском](https://github.com/thatcelt/AminoDorksTS/blob/master/README.RU.MD)
 
 ## Содержание
 -----------------
