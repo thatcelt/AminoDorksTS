@@ -113,7 +113,7 @@ A main class to interacting with API in global namespace of app.
 
 12. `searchCommunity(title: string): Promise<SearchCommunityResponse>` - Method for searching community by title
 
-13. `joinCommunity(ndcId: number, invitationId?: string): Promise<BasicResponse>` - Method for joining community
+13. `joinCommunity(ndcId: number): Promise<BasicResponse>` - Method for joining community
 
 14. `leaveCommunity(ndcId: number): Promise<BasicResponse>` - Method for leaving community
 

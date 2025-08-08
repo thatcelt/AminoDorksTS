@@ -11,8 +11,9 @@ exec('npm view amino.dorks version', (error, stdout, stderr) => {
         console.error(`Error retrieving npm package version for amino.dorks: ${stderr.trim()}`);
         return;
     };
-    
-    if (stdout.trim() !== CURRENT_VERSION) {
-        console.log(`\x1b[33mYou're using outdated version. amino.dorks v${CURRENT_VERSION} is available.\x1b[0m`);
+    const installedVersion = stdout.trim();
+
+    if (installedVersion !== CURRENT_VERSION) {
+        console.log(`\x1b[33mYou're using outdated version. amino.dorks v${installedVersion} is available.\x1b[0m`);
     };
 });

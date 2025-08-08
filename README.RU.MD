@@ -113,7 +113,7 @@ main();
 
 12. `searchCommunity(title: string): Promise<SearchCommunityResponse>` - Метод для поиска сообщества по названию
 
-13. `joinCommunity(ndcId: number, invitationId?: string): Promise<BasicResponse>` - Метод для присоединения к сообществу
+13. `joinCommunity(ndcId: number): Promise<BasicResponse>` - Метод для присоединения к сообществу
 
 14. `leaveCommunity(ndcId: number): Promise<BasicResponse>` - Метод для выхода из сообщества
 
