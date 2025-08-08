@@ -419,7 +419,7 @@ export class AminoDorksNDC implements BasicClient {
                     link: embed.link,
                     title: embed.title,
                     content: embed.content,
-                    mediaList: embed.mediaList ? [100, embed.mediaList, null] : null
+                    mediaList: embed.mediaList ? [[100, embed.mediaList, null]] : null
                 },
                 clientRefId: STATIC_CLIENT_REFERENCE_ID,
                 timestamp: Date.now(),
