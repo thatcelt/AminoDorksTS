@@ -21,7 +21,7 @@ export const CRYPTO_KEYS: Safe<CryptoKeys> = {
     DEVICE_LENGTH: 20
 };
 
-export const CURRENT_VERSION: Safe<string> = '1.3.5';
+export const CURRENT_VERSION: Safe<string> = '1.3.6';
 export const TELEGRAM_URL = 'https://t.me/aminodorks';
 export const INVITE_CODE_DEFAULT_DURATION: Safe<number> = 259200;
 export const GLOBAL_TIMEZONE: Safe<number> = Math.floor(10800 / 1000);

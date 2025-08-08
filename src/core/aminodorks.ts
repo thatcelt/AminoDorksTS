@@ -231,12 +231,11 @@ export class AminoDorks implements BasicClient {
         });
     };
 
-    public joinCommunity = async (ndcId: Safe<number>, invitationId?: MayUndefined<string>): Promise<BasicResponse> => {
+    public joinCommunity = async (ndcId: Safe<number>): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
             path: `/x${ndcId}/s/community/join`,
             body: JSON.stringify({
-                timestamp: Date.now(),
-                invitationId: invitationId
+                timestamp: Date.now()
             })
         });
     };
