@@ -1,6 +1,6 @@
 import { cacheManager, INVALID_SESSION_STATUS_CODE, SIGNATURE_STUB, STATIC_CLIENT_REFERENCE_ID } from '../constants';
 import { CacheEntity, MayNull, MayUndefined, Safe } from '../types';
-import { LinkInfo, UserProfile } from '../types/additional';
+import { Community, LinkInfo, UserProfile } from '../types/additional';
 import { AllowRejoin, ChatThreadSettings, EditChatArguments, EditChatThreadBuilder, EditProfileBuilder, Embed, FollowingArguments, MediaArguments, MessageSettings, MessageTypes } from '../types/other';
 import { GlobalResponses, BasicResponse, ImplementaryResponses } from '../types/responses';
 import { CommentsSorting, MediaTypes, MembersType, PostTypes } from '../types/types';
@@ -92,6 +92,12 @@ export class AminoDorks implements BasicClient {
             path: `/g/s/link-resolution?q=${link.split('/')[4]}`
         })).linkInfoV2.extensions.linkInfo;
     };
+
+    public getCommunityOnLink = async (link: string): Promise<Community> => {
+        return (await this.__httpWorkflow.sendGet<GlobalResponses.GetCommunityInfoResponse>({
+            path: `/g/s/link-resolution?q=${link}`
+        })).linkInfoV2.extensions.community;
+    }
 
     public authenticate = async (email: Safe<string>, password: Safe<string>): Promise<UserProfile> => {
         const cachedUserData = cacheManager.getFromKey(`${email}-${password}`)

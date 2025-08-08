@@ -73,6 +73,15 @@ export namespace GlobalResponses {
         };
     };
 
+    export interface GetCommunityInfoResponse extends BasicResponse {
+        linkInfoV2: {
+            path: string;
+            extensions: {
+                community: Community;
+            };
+        };
+    };
+
     export interface UploadMediaResponse extends BasicResponse {
         mediaValue: string;
     };

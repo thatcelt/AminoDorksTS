@@ -125,6 +125,8 @@ main();
 
 18. `getWalletHistory(start: number = 0, size: number = 25): Promise<GetWalletHistoryResponse>` - Метод для получения истории кошелька
 
+19. `getCommunnityOnLink(link: string): Promise<Community>` - Метод для получения сообщества по ссылке
+
 -----------------
 
 ### 2. `AminoDorksNDC(httpWorkflow: HttpWorkflow, accountInfo: UserProfile, ndcId: number)`

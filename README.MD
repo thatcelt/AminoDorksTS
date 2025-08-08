@@ -125,6 +125,8 @@ A main class to interacting with API in global namespace of app.
 
 18. `getWalletHistory(start: number = 0, size: number = 25): Promise<GetWalletHistoryResponse>` - Method for getting wallet history
 
+19. `getCommunnityOnLink(link: string): Promise<Community>` - Method for getting community by link
+
 -----------------
 
 ### 2. `AminoDorksNDC(httpWorkflow: HttpWorkflow, accountInfo: UserProfile, ndcId: number)`
