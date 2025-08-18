@@ -147,7 +147,7 @@ export class ThreadManager implements APIManager {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
             path: `${this.endpoint}/chat/thread/${threadId}/message`,
             body: JSON.stringify({
-                type: settings.messageType,
+                type: settings.messageType || 0,
                 content: content,
                 attachedObject: null,
                 clientRefId: 404354928,

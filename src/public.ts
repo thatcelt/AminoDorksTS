@@ -102,9 +102,9 @@ enum MessageTypesEnum {
 export const MessageType = z.enum(MessageTypesEnum);
 
 export const MessageSettingsSchema = z.object({
-    messageType: MessageType,
+    messageType: MessageType.default(0).optional(),
     mentionedArray: z.array(z.string()).optional(),
-    replyMessageId: z.number().optional()
+    replyMessageId: z.string().optional()
 });
 
 export const EmbedSchema = z.object({

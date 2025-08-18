@@ -15,6 +15,12 @@ export const MessageSchema = z.object({
   createdTime: z.string(),
   type: z.number(),
   mediaValue: z.string().nullable(),
+  extensions: z.object({
+    replyMessageId: z.string().nullable(),
+    replyMessage: z.object({
+      author: UserSchema.nullable().optional(),
+    }).nullable().optional()
+  }).nullable().optional()
 });
 
 export type Message = z.infer<typeof MessageSchema>;
