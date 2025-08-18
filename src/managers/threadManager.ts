@@ -3,7 +3,7 @@ import { HttpWorkflow } from '../core/httpworkflow';
 import { Safe } from '../private';
 import { Thread } from '../schemas/aminoapps/thread';
 import { MessagesResponse, MessagesResponseSchema, ThreadResponse, ThreadResponseSchema, ThreadsResponse, ThreadsResponseSchema } from '../schemas/responses/ndc';
-import { CreateThreadBuilder, EditThreadBuilder, Embed, MessageSettings, StartSize, Status, ThreadType } from '../public';
+import { CreateThreadBuilder, EditThreadBuilder, Embed, LinkSnippet, MessageSettings, StartSize, Status, ThreadType } from '../public';
 import { BasicResponse, BasicResponseSchema } from '../schemas/responses/basic';
 import { Account } from '../schemas/aminodorks';
 import { formatMedia } from '../utils/utils';
@@ -177,6 +177,32 @@ export class ThreadManager implements APIManager {
                 timestamp: Date.now(),
                 uid: this.__account.user.uid,
                 extensions: {mentionedArray: settings.mentionedArray || []},
+                replyMessageId: settings.replyMessageId
+            })
+        }, BasicResponseSchema);
+    };
+
+    public sendLinkSnippet = async (threadId: Safe<string>, content: Safe<string>, linkSnippet: LinkSnippet, settings: MessageSettings = { messageType: 0 }): Promise<BasicResponse> => {
+         return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `${this.endpoint}/chat/thread/${threadId}/message`,
+            body: JSON.stringify({
+                type: settings.messageType,
+                content: content,
+                attachedObject: null,
+                clientRefId: 404354928,
+                timestamp: Date.now(),
+                uid: this.__account.user.uid,
+                extensions: {
+                    mentionedArray: settings.mentionedArray || [],
+                    linkSnippetList: [
+                        {
+                            link: linkSnippet.link,
+                            mediaType: 100,
+                            mediaUploadValue: linkSnippet.media.toString('base64'),
+                            mediaUploadValueContentType: 'image/jpg'
+                        }
+                    ]
+                },
                 replyMessageId: settings.replyMessageId
             })
         }, BasicResponseSchema);

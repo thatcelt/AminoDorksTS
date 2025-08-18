@@ -19,7 +19,16 @@ export const MessageSchema = z.object({
     replyMessageId: z.string().nullable(),
     replyMessage: z.object({
       author: UserSchema.nullable().optional(),
-    }).nullable().optional()
+    }).nullable().optional(),
+    linkSnippetList: z.array(z.object({
+      body: z.string().nullable(),
+      title: z.string().nullable(),
+      favicon: z.string().nullable(),
+      source: z.string().nullable(),
+      link: z.string(),
+      deepLink: z.string().nullable(),
+      mediaList: z.array(z.tuple([z.number(), z.string(), z.null()])).nullable()
+    })).optional().nullable()
   }).nullable().optional()
 });
 

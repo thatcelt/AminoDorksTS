@@ -111,7 +111,7 @@ export const EmbedSchema = z.object({
     id: z.string().optional(),
     type: z.number().optional(),
     link: z.string().optional(),
-    title: z.string().optional(),
+    title: z.string(),
     content: z.string().optional(),
     thumbnail: z.string().optional()
 });
@@ -129,6 +129,11 @@ export const EditProfileBuilderSchema = z.object({
     about: z.string().optional(),
     backgroundMediaList: z.string().optional(),
     backgroundColor: z.string().optional()
+});
+
+export const LinkSnippetSchema = z.object({
+    link: z.string(),
+    media: z.instanceof(Buffer)
 });
 
 export type MediaType = z.infer<typeof MediaTypeUnion>;
@@ -151,3 +156,4 @@ export type Embed = z.infer<typeof EmbedSchema>;
 export type Timer = z.infer<typeof TimerSchema>;
 export type Timers = z.infer<typeof TimersArray>;
 export type EditProfileBuilder = z.infer<typeof EditProfileBuilderSchema>;
+export type LinkSnippet = z.infer<typeof LinkSnippetSchema>;

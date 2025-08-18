@@ -87,7 +87,7 @@ export class HttpWorkflow {
     };
 
     private __handleResponse = async <T>(fullPath: string, body: BodyReadable & Dispatcher.BodyMixin, schema: z.ZodSchema): Promise<T> => {
-        const jsonBody = await body.json()
+        const jsonBody = await body.json();
         const responseSchema = BasicResponseSchema.parse(jsonBody);
         LOGGER.child({ path: fullPath }).info(responseSchema['api:statuscode']);
 
