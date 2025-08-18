@@ -9,6 +9,7 @@ import { Comment } from '../schemas/aminoapps/comment';
 import { Account } from '../schemas/aminodorks';
 import { LOGGER } from '../utils/logger';
 import { formatMedia } from '../utils/utils';
+import { MembersResponse, MembersResponseSchema } from '../schemas/responses/ndc';
 
 export class UserManager implements APIManager {
     endpoint: Safe<string> = '/g/s';
@@ -30,18 +31,26 @@ export class UserManager implements APIManager {
         }, GetUserResponseSchema)).userProfile;
     };
 
-    public getMany = async (startSize: StartSize = { start: 0, size: 25 }, usersType: UsersType = 'recent'): Promise<User[]> => {
+    public getMany = async (startSize: StartSize = { start: 0, size: 50 }, usersType: UsersType = 'recent'): Promise<User[]> => {
         return (await this.__httpWorkflow.sendGet<GetUsersResponse>({
             path: `${this.endpoint}/user-profile?type=${usersType}&start=${startSize.start}&size=${startSize.size}`
         }, GetUsersResponseSchema)).userProfileList;
     };
 
-    public getInOnline = async (startSize: StartSize = { start: 0, size: 25 }): Promise<User[]> => {
+    public getInOnline = async (startSize: StartSize = { start: 0, size: 50 }): Promise<User[]> => {
         if (!this.__ndcId) LOGGER.fatal('ndcId is not defined. Use .as to set ndcId.');
 
         return (await this.__httpWorkflow.sendGet<GetUsersResponse>({
             path: `${this.endpoint}/live-layer?topic=ndtopic:x${this.__ndcId}:online-members&start=${startSize.start}&size=${startSize.size}`
         }, GetUsersResponseSchema)).userProfileList;
+    };
+    
+    public getThreadUsers = async (threadId: Safe<string>, startSize: StartSize = { start: 0, size: 100 }): Promise<User[]> => {
+        if (!this.__ndcId) LOGGER.fatal('ndcId is not defined. Use .as to set ndcId.');
+
+        return (await this.__httpWorkflow.sendGet<MembersResponse>({
+            path: `${this.endpoint}/chat/thread/${threadId}/member?start=${startSize.start}&size=${startSize.size}&type=default&cv=1.2`
+        }, MembersResponseSchema)).memberList;
     };
 
     public edit = async (builder: EditProfileBuilder): Promise<BasicResponse> => {

@@ -260,4 +260,11 @@ export class ThreadManager implements APIManager {
             contentType: 'application/x-www-form-urlencoded'
         }, BasicResponseSchema);
     };
+
+    public inviteToVoice = async (threadId: Safe<string>, userId: Safe<string>): Promise<BasicResponse> => {
+        return this.__httpWorkflow.sendUrlEncoded<BasicResponse>({
+            path: `${this.endpoint}/chat/thread/${threadId}/member/${userId}/invite-av-chat`,
+            contentType: 'application/x-www-form-urlencoded'
+        }, BasicResponseSchema);
+    };
 };

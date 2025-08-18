@@ -32,7 +32,7 @@ export const UserSchema = z.object({
   storiesCount: z.number().optional(),
   blogsCount: z.number().optional(),
   extensions: z.object({
-    customTitles: z.array(CustomTitleSchema)
+    customTitles: z.array(CustomTitleSchema).nullable().optional()
   }).nullable().optional()
 });
 

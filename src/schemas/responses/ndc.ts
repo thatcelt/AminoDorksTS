@@ -9,6 +9,7 @@ import { BlogSchema } from '../aminoapps/blog';
 import { ItemSchema } from '../aminoapps/item';
 import { ThreadSchema } from '../aminoapps/thread';
 import { MessageSchema } from '../aminoapps/message';
+import { UserSchema } from '../aminoapps/user';
 
 export const GetCommunityResponseSchema = z.object({
     ...BasicResponseSchema.shape,
@@ -84,6 +85,11 @@ export const IdentifyInvitationResponseSchema = z.object({
     invitation: InviteCodeSchema
 });
 
+export const MembersResponseSchema = z.object({
+    ...BasicResponseSchema.shape,
+    memberList: z.array(UserSchema)
+});
+
 export type GetCommunityResponse = z.infer<typeof GetCommunityResponseSchema>;
 export type GetInviteCodesResponse = z.infer<typeof GetInviteCodesResponseSchema>;
 export type CreateInviteCodeResponse = z.infer<typeof CreateInviteCodeResponseSchema>;
@@ -97,3 +103,4 @@ export type ThreadResponse = z.infer<typeof ThreadResponseSchema>;
 export type ThreadsResponse = z.infer<typeof ThreadsResponseSchema>;
 export type MessagesResponse = z.infer<typeof MessagesResponseSchema>;
 export type IdentifyInvitationResponse = z.infer<typeof IdentifyInvitationResponseSchema>;
+export type MembersResponse = z.infer<typeof MembersResponseSchema>;

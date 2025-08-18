@@ -235,18 +235,53 @@ export class SocketWorkflow {
         this.__connectedVoiceThreads.splice(this.__connectedVoiceThreads.indexOf(threadId), 1);
     };
 
-    public sendTyping = async (ncdId: number, threadId: string): Promise<void> => {
+    public sendTyping = async (ndcId: number, threadId: string): Promise<void> => {
         this.send(JSON.stringify({
             o: {
                 actions: ['Typing'],
-                target: `ndc://x${ncdId}/chat-thread/${threadId}`,
-                ndcId: ncdId,
+                target: `ndc://x${ndcId}/chat-thread/${threadId}`,
+                ndcId: ndcId,
                 params: {
                     threadType: 2
                 },
                 id: (await this.__getElapsedRealtime()).elapsedRealtime
             },
             t: 304
+        }));
+    };
+
+    public sendRecording = async (ndcId: Safe<number>, threadId: Safe<string>) => {
+        this.send(JSON.stringify({
+            o: {
+                actions: [
+                    "Recording"
+                ],
+                target: `ndc://x${ndcId}/chat-thread/${threadId}`,
+                ndcId: ndcId,
+                params: {
+                    threadType: 0
+                },
+                id: (await this.__getElapsedRealtime()).elapsedRealtime
+            },
+            t: 304
+        }));
+    };
+
+    public sendEndRecording = async (ndcId: Safe<number>, threadId: Safe<string>, duration: Safe<number>) => {
+        this.send(JSON.stringify({
+            o: {
+                actions: [
+                    "Recording"
+                ],
+                target: `ndc://x${ndcId}/chat-thread/${threadId}`,
+                ndcId: ndcId,
+                params: {
+                    threadType: 0,
+                    duration: duration
+                },
+                id: (await this.__getElapsedRealtime()).elapsedRealtime
+            },
+            t: 306
         }));
     };
 };
