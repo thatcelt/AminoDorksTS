@@ -52,20 +52,22 @@ export class SecurityManager implements APIManager {
     };
 
     private __getAccountWithSession = async (account: CachedAccount): Promise<MayUndefined<boolean>> => {
-        const rawResponse = await this.__httpWorkflow.sendRaw<BasicResponse>({
-            method: 'GET',
-            path: `${this.endpoint}/account`,
-            headers: {
-                NDCAUTH: `sid=${account.account.sessionId}`,
-                NDCDEVICEID: account.account.deviceId,
-                AUID: account.account.user.uid
-            },
-            body: ''
-        }, BasicResponseSchema);
+        try {
+            const rawResponse = await this.__httpWorkflow.sendRaw<BasicResponse>({
+                method: 'GET',
+                path: `${this.endpoint}/account`,
+                headers: {
+                    NDCAUTH: `sid=${account.account.sessionId}`,
+                    NDCDEVICEID: account.account.deviceId,
+                    AUID: account.account.user.uid
+                },
+                body: ''
+            }, BasicResponseSchema);
 
-        if (rawResponse['api:statuscode'] != 0) return;
-
-        return true;
+            return rawResponse['api:statuscode'] == 0;
+        } catch {
+            return false;
+        };
     };
 
     public getAccount = async (): Promise<MayUndefined<User>> => {

@@ -1,8 +1,9 @@
 import { APIManager } from '../interfaces/manager';
 import { HttpWorkflow } from '../core/httpworkflow';
 import { Safe } from '../private';
-import { PostType } from '../public';
+import { FeatureDuration, PostType } from '../public';
 import { BasicResponse, BasicResponseSchema } from '../schemas/responses/basic';
+import { CustomTitle } from '../schemas/aminoapps/customTitle';
 
 export class AdminManager implements APIManager {
     endpoint: Safe<string>;
@@ -116,6 +117,65 @@ export class AdminManager implements APIManager {
                 adminOpNote: {
                     content: reason
                 },
+                timestamp: Date.now()
+            })
+        }, BasicResponseSchema);
+    };
+
+    public addFeaturedUser = async (userId: Safe<string>, days: FeatureDuration = 1): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `${this.endpoint}/user-profile/${userId}/admin`,
+            body: JSON.stringify({
+                adminOpName: 114,
+                adminOpValue: {
+                    featuredType: 4,
+                    featuredDuration: days * 86400
+                },
+                timestamp: Date.now()
+            })
+        }, BasicResponseSchema);
+    };
+
+    public deleteFeature = async (userId: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `${this.endpoint}/user-profile/${userId}/admin`,
+            body: JSON.stringify({
+                adminOpName: 114,
+                adminOpValue: {
+                    featuredType: 0
+                },
+                timestamp: Date.now()
+            })
+        }, BasicResponseSchema);
+    };
+
+    public manageTitles = async (userId: Safe<string>, titles: Safe<CustomTitle[]>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `${this.endpoint}/user-profile/${userId}/admin`,
+            body: JSON.stringify({
+                adminOpName: 207,
+                adminOpValue: {
+                    titles: [...titles]
+                },
+                timestamp: Date.now()
+            })
+        }, BasicResponseSchema);
+    };
+
+    public warnUser = async (userId: Safe<string>, title: Safe<string>, content: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `${this.endpoint}/notice`,
+            body: JSON.stringify({
+                targetUid: userId,
+                title: title,
+                content: content,
+                attachedObject: {
+                    objectId: userId,
+                    objectType: 0
+                },
+                penaltyType: 0,
+                adminOpNote: {},
+                noticeType: 7,
                 timestamp: Date.now()
             })
         }, BasicResponseSchema);

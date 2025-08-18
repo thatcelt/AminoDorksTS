@@ -2,7 +2,7 @@ import { APIManager } from '../interfaces/manager';
 import { HttpWorkflow } from '../core/httpworkflow';
 import { MayUndefined, Safe } from '../private';
 import { EnviromentContext, StartSize, Timers } from '../public';
-import { CreateInviteCodeResponse, CreateInviteCodeResponseSchema, GetCommunityResponse, GetCommunityResponseSchema, GetInviteCodesResponse, GetInviteCodesResponseSchema } from '../schemas/responses/ndc';
+import { CreateInviteCodeResponse, CreateInviteCodeResponseSchema, GetCommunityResponse, GetCommunityResponseSchema, GetInviteCodesResponse, GetInviteCodesResponseSchema, IdentifyInvitationResponse, IdentifyInvitationResponseSchema } from '../schemas/responses/ndc';
 import { GetCommunitiesResponse, GetCommunitiesResponseSchema, SearchCommunityResponse, SearchCommunityResponseSchema } from '../schemas/responses/global';
 import { BasicResponse, BasicResponseSchema } from '../schemas/responses/basic';
 import { InviteCode } from '../schemas/aminoapps/inviteCode';
@@ -10,6 +10,7 @@ import { INVITE_CODE_DEFAULT_DURATION, ONLINE_DEFAULT_DURATION } from '../consta
 import { LOGGER } from '../utils/logger';
 import { getTimezone } from '../utils/utils';
 import { Account } from '../schemas/aminodorks';
+import { Community } from '../schemas/aminoapps/community';
 
 export class CommunityManager implements APIManager {
     endpoint: Safe<string>;
@@ -25,16 +26,16 @@ export class CommunityManager implements APIManager {
         this.__httpWorkflow = httpWorkflow;
     };
 
-    public get = async (ndcId: Safe<number>): Promise<GetCommunityResponse> => {
-        return await this.__httpWorkflow.sendGet<GetCommunityResponse>({
+    public get = async (ndcId: Safe<number>): Promise<Community> => {
+        return (await this.__httpWorkflow.sendGet<GetCommunityResponse>({
             path: `/g/s-x${ndcId}/community/info?withInfluencerList=1&withTopicList=true&influencerListOrderStrategy=fansCount`
-        }, GetCommunityResponseSchema);
+        }, GetCommunityResponseSchema)).community
     };
 
-    public getMany = async (startSize: StartSize = { start: 0, size: 25 }): Promise<GetCommunitiesResponse> => {
-        return await this.__httpWorkflow.sendGet<GetCommunitiesResponse>({
+    public getMany = async (startSize: StartSize = { start: 0, size: 25 }): Promise<Community[]> => {
+        return (await this.__httpWorkflow.sendGet<GetCommunitiesResponse>({
             path: `/g/s/community/joined?v=1&start=${startSize.start}&size=${startSize.size}`
-        }, GetCommunitiesResponseSchema);
+        }, GetCommunitiesResponseSchema)).communityList
     };
 
     public search = async (title: Safe<string>): Promise<SearchCommunityResponse> => {
@@ -52,6 +53,16 @@ export class CommunityManager implements APIManager {
         }, BasicResponseSchema);
     };
 
+    public joinWithInvite = async (ndcId: Safe<number>, inviteCode: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `/x${ndcId}/s/community/join`,
+            body: JSON.stringify({
+                timestamp: Date.now(),
+                invitationId: (await this.identifyInvitation(inviteCode)).invitation.invitationId
+            })
+        }, BasicResponseSchema);
+    };
+
     public leave = async (ndcId: Safe<number>): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendUrlEncoded<BasicResponse>({
             path: `/x${ndcId}/s/community/leave`,
@@ -63,10 +74,16 @@ export class CommunityManager implements APIManager {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
             path: `/x${ndcId}/s/community/membership-request`,
             body: JSON.stringify({
-                message: message,
+                    message: message,
                 timestamp: Date.now()
             })
         }, BasicResponseSchema);
+    };
+
+    public identifyInvitation = async (inviteCode: Safe<string>): Promise<IdentifyInvitationResponse> => {
+        return await this.__httpWorkflow.sendGet<IdentifyInvitationResponse>({
+            path: `/g/s/community/link-identify?q=http%3A%2F%2Faminoapps.com%2Finvite%2F${inviteCode}`
+        }, IdentifyInvitationResponseSchema);
     };
 
     public getInviteCodes = async (startSize: StartSize): Promise<InviteCode[]> => {

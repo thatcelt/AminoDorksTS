@@ -79,6 +79,11 @@ export const MessagesResponseSchema = z.object({
     })
 });
 
+export const IdentifyInvitationResponseSchema = z.object({
+    ...BasicResponseSchema.shape,
+    invitation: InviteCodeSchema
+});
+
 export type GetCommunityResponse = z.infer<typeof GetCommunityResponseSchema>;
 export type GetInviteCodesResponse = z.infer<typeof GetInviteCodesResponseSchema>;
 export type CreateInviteCodeResponse = z.infer<typeof CreateInviteCodeResponseSchema>;
@@ -91,3 +96,4 @@ export type PublicBlogsResponse = z.infer<typeof PublicBlogsResponseSchema>;
 export type ThreadResponse = z.infer<typeof ThreadResponseSchema>;
 export type ThreadsResponse = z.infer<typeof ThreadsResponseSchema>;
 export type MessagesResponse = z.infer<typeof MessagesResponseSchema>;
+export type IdentifyInvitationResponse = z.infer<typeof IdentifyInvitationResponseSchema>;

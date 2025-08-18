@@ -62,6 +62,17 @@ export class UserManager implements APIManager {
         }, BasicResponseSchema);
     };
 
+    public applyFrame = async (frameId: Safe<string>, applyToAll: Safe<boolean> = false): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `${this.endpoint}/avatar-frame/apply`,
+            body: JSON.stringify({
+                frameId: frameId,
+                applyToAll: Number(applyToAll),
+                timestamp: Date.now()
+            })
+        }, BasicResponseSchema)
+    };
+
     public kick = async (userId: Safe<string>, threadId: Safe<string>, allowRejoin: Safe<boolean> = false): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendDelete<BasicResponse>({
             path: `${this.endpoint}/chat/thread/${threadId}/member/${userId}?allowRejoin=${Number(allowRejoin)}`

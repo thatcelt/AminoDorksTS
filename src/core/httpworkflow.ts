@@ -1,27 +1,32 @@
-import { Dispatcher, Pool } from 'undici';
+import { Dispatcher, Pool, ProxyAgent, request } from 'undici';
 import { z } from 'zod';
 import BodyReadable from 'undici/types/readable';
 
 import { API_HEADERS, BASE_URL, EMPTY_BODY, GENERATORS_HEADERS, GENERATORS_URL } from '../constants';
-import { HeadersType, Safe } from '../private';
+import { HeadersType, MayUndefined, Safe } from '../private';
 import { generateHMAC } from '../utils/crypt';
-import { BufferRequestConfig, DeleteRequestConfig, GenerateECDSAResponse, GenerateECDSAResponseSchema, GetElapsedRealtime, GetElapsedRealtimeSchema, GetPublicKeyCredentialsResponse, GetPublicKeyCredentialsResponseSchema, GetRequestConfig, PostRequestConfig, RawRequestConfig, UrlEncodedRequestConfig } from '../schemas/httpworkflow';
-import { BasicResponse } from '../schemas/responses/basic';
+import { AllConfigs, BufferRequestConfig, DeleteRequestConfig, GenerateECDSAResponse, GenerateECDSAResponseSchema, GetElapsedRealtime, GetElapsedRealtimeSchema, GetPublicKeyCredentialsResponse, GetPublicKeyCredentialsResponseSchema, GetRequestConfig, PostRequestConfig, RawRequestConfig, UrlEncodedRequestConfig } from '../schemas/httpworkflow';
+import { BasicResponseSchema } from '../schemas/responses/basic';
 import { LOGGER } from '../utils/logger';
+import { convertProxy } from '../utils/utils';
+import { AminoDorksAPIError } from '../exceptions/api';
+import { socksDispatcher } from 'fetch-socks';
 
 export class HttpWorkflow {
     private __headers: HeadersType = API_HEADERS;
     private __generatorsHeaders: HeadersType = GENERATORS_HEADERS;
+    private readonly __proxies: string[] = [];
 
-    private readonly __httpPool: Pool;
     private readonly __generatorsPool: Pool;
+    private __currentDispatcher: MayUndefined<ProxyAgent>;
 
-    constructor(apiKey: string, deviceId: string, options: Pool.Options = {}) {
+    constructor(apiKey: string, deviceId: string, proxies: string[] = []) {
         this.__generatorsHeaders['Authorization'] = apiKey;
         this.headers = { NDCDEVICEID: deviceId };
+        this.__proxies = proxies;
 
-        this.__httpPool = new Pool(BASE_URL, options);
-        this.__generatorsPool = new Pool(GENERATORS_URL, options);
+        if (proxies.length) this.__switchProxy();
+        this.__generatorsPool = new Pool(GENERATORS_URL);
     };
 
     set headers(headers: HeadersType) {
@@ -30,6 +35,23 @@ export class HttpWorkflow {
             ...headers
         };
     };
+
+    // TODO: add catching of errors
+    private __switchProxy = () => {
+        if (this.__currentDispatcher) {
+            this.__currentDispatcher.close();
+
+        };
+        const randomProxy = this.__proxies[Math.floor(Math.random() * this.__proxies.length)];
+        this.__proxies.splice(this.__proxies.indexOf(randomProxy), 1);
+
+        this.__currentDispatcher = socksDispatcher(convertProxy(randomProxy), {
+            connect: {
+                rejectUnauthorized: false
+            }
+        });
+        LOGGER.info({socks: randomProxy}, 'Switched proxy.');
+    }
 
     private __generateECDSA = async (payloadBody: Safe<string>): Promise<GenerateECDSAResponse> => {
         const { body } = await this.__generatorsPool.request({
@@ -65,10 +87,31 @@ export class HttpWorkflow {
     };
 
     private __handleResponse = async <T>(fullPath: string, body: BodyReadable & Dispatcher.BodyMixin, schema: z.ZodSchema): Promise<T> => {
-        const responseSchema = schema.parse(await body.json()) as BasicResponse;
+        const jsonBody = await body.json()
+        const responseSchema = BasicResponseSchema.parse(jsonBody);
         LOGGER.child({ path: fullPath }).info(responseSchema['api:statuscode']);
 
-        return responseSchema as T;
+        if (responseSchema['api:statuscode'] != 0) AminoDorksAPIError.throw(responseSchema['api:statuscode']);
+
+        return schema.parse(jsonBody) as T;
+    };
+
+    private __withErrorHandler = async <T>(requestFunction: (config: AllConfigs, schema: z.ZodSchema) => Promise<T>) => {
+        return async (config: AllConfigs, schema: z.ZodSchema) => {
+            try {
+                return await requestFunction(config, schema);
+            } catch (error) {
+                if (this.__currentDispatcher && this.__proxies.length) {
+                    this.__switchProxy();
+                    return await requestFunction(config, schema);
+                } else if (this.__currentDispatcher && !this.__proxies.length) {
+                    LOGGER.info('No proxies left. Swtiched to no proxy mode.');
+                    this.__currentDispatcher = undefined;
+                };
+
+                AminoDorksAPIError.throw((error as AminoDorksAPIError).code);
+            }
+        };
     };
 
     public getHeader = (header: string): string => {
@@ -96,65 +139,94 @@ export class HttpWorkflow {
     };
 
     public sendRaw = async <T>(config: RawRequestConfig, schema: z.ZodSchema): Promise<T> => {
-        const { body } = await this.__httpPool.request({
-            path: `/api/v1${config?.path}`,
-            method: config?.method || 'GET',
-            headers: {
-                ...this.__headers,
-                ...config?.headers
-            }
-        });
+        const callback = async (config: RawRequestConfig, schema: z.ZodSchema) => {
+            const { body } = await request(`${BASE_URL}/api/v1${config?.path}`, {
+                method: config?.method || 'GET',
+                headers: {
+                    ...this.__headers,
+                    ...config?.headers
+                },
+                dispatcher: this.__currentDispatcher
+            });
+            return await this.__handleResponse<T>(`${BASE_URL}/api/v1${config?.path}`, body, schema);
+        };
+        
+        const handler = await this.__withErrorHandler(callback as (config: AllConfigs, schema: z.ZodSchema) => Promise<T>);
 
-        return await this.__handleResponse<T>(`${BASE_URL}/api/v1${config?.path}`, body, schema);
+        return await handler(config, schema);
     };
 
     public sendGet = async <T>(config: GetRequestConfig, schema: z.ZodSchema): Promise<T> => {
-        const mergedHeaders: HeadersType = JSON.parse(JSON.stringify(this.__headers));
+        const callback = async (config: GetRequestConfig, schema: z.ZodSchema) => {
+            const mergedHeaders: HeadersType = JSON.parse(JSON.stringify(this.__headers));
 
-        if (config.contentType) mergedHeaders['Content-Type'] = config.contentType
-        
-        const { body } = await this.__httpPool.request({
-            path: `/api/v1${config.path}`,
-            method: 'GET',
-            headers: mergedHeaders
-        });
+            if (config.contentType) mergedHeaders['Content-Type'] = config.contentType
+            
+            const { body } = await request(`${BASE_URL}/api/v1${config?.path}`, {
+                method: 'GET',
+                headers: mergedHeaders,
+                dispatcher: this.__currentDispatcher
+            });
 
-        return await this.__handleResponse<T>(`${BASE_URL}/api/v1${config.path}`, body, schema);
+            return await this.__handleResponse<T>(`${BASE_URL}/api/v1${config.path}`, body, schema);
+        };
+
+        const handler = await this.__withErrorHandler(callback as (config: AllConfigs, schema: z.ZodSchema) => Promise<T>);
+
+        return await handler(config, schema);
     };
 
     public sendDelete = async <T>(config: DeleteRequestConfig, schema: z.ZodSchema): Promise<T> => {
-        const { body } = await this.__httpPool.request({
-            path: `/api/v1${config.path}`,
-            method: 'DELETE',
-            headers: this.__headers
-        });
+        const callback = async (config: DeleteRequestConfig, schema: z.ZodSchema) => {
+            const { body } = await request(`${BASE_URL}/api/v1${config?.path}`, {
+                method: 'DELETE',
+                headers: this.__headers,
+                dispatcher: this.__currentDispatcher
+            });
 
-        return await this.__handleResponse<T>(`${BASE_URL}/api/v1${config.path}`, body, schema);
+            return await this.__handleResponse<T>(`${BASE_URL}/api/v1${config.path}`, body, schema);
+        };
+
+        const handler = await this.__withErrorHandler(callback as (config: AllConfigs, schema: z.ZodSchema) => Promise<T>);
+
+        return await handler(config, schema);
     };
 
     public sendPost = async <T>(config: PostRequestConfig, schema: z.ZodSchema): Promise<T> => {
-        const { body } = await this.__httpPool.request({
-            path: `/api/v1${config.path}`,
-            method: 'POST',
-            headers: await this.__configurePostHeaders(Buffer.from(config.body), config.contentType),
-            body: config.body
-        });
+        const callback = async (config: PostRequestConfig, schema: z.ZodSchema): Promise<T> => {
+            const { body } = await request(`${BASE_URL}/api/v1${config?.path}`, {
+                method: 'POST',
+                headers: await this.__configurePostHeaders(Buffer.from(config.body), config.contentType),
+                body: config.body,
+                dispatcher: this.__currentDispatcher
+            });
 
-        return await this.__handleResponse<T>(`${BASE_URL}/api/v1${config.path}`, body, schema);
+            return await this.__handleResponse<T>(`${BASE_URL}/api/v1${config.path}`, body, schema);
+        };
+
+        const handler = await this.__withErrorHandler(callback as (config: AllConfigs, schema: z.ZodSchema) => Promise<T>);
+
+        return await handler(config, schema);
     };
 
     public sendEarlyPost = async <T>(config: PostRequestConfig, schema: z.ZodSchema): Promise<T> => {
-        const bufferedBody = Buffer.from(config.body);
+        const callback = async (config: PostRequestConfig, schema: z.ZodSchema): Promise<T> => {
+            const bufferedBody = Buffer.from(config.body);
 
-        const { body } = await this.__httpPool.request({
-            path: `/api/v1${config.path}`,
-            method: 'POST',
-            headers: this.__configureHeaders(bufferedBody, config.contentType),
-            body: bufferedBody
-        });
+            const { body } = await request(`${BASE_URL}/api/v1${config?.path}`, {
+                method: 'POST',
+                headers: this.__configureHeaders(bufferedBody, config.contentType),
+                body: bufferedBody,
+                dispatcher: this.__currentDispatcher
+            });
 
-        return await this.__handleResponse<T>(`${BASE_URL}/api/v1${config.path}`, body, schema);
-    };
+            return await this.__handleResponse<T>(`${BASE_URL}/api/v1${config.path}`, body, schema);
+        };
+
+        const handler = await this.__withErrorHandler(callback as (config: AllConfigs, schema: z.ZodSchema) => Promise<T>);
+
+        return await handler(config, schema);
+    }
 
     public sendUrlEncoded = async <T>(config: UrlEncodedRequestConfig, schema: z.ZodSchema): Promise<T> => {
         return this.sendEarlyPost<T>({
@@ -165,13 +237,19 @@ export class HttpWorkflow {
     };
 
     public sendBuffer = async <T>(config: BufferRequestConfig, schema: z.ZodSchema): Promise<T> => {
-        const { body } = await this.__httpPool.request({
-            path: `/api/v1${config.path}`,
-            method: 'POST',
-            headers: this.__configureHeaders(config.body, config.contentType),
-            body: config.body
-        });
+        const callback = async (config: BufferRequestConfig, schema: z.ZodSchema): Promise<T> => {
+            const { body } = await request(`${BASE_URL}/api/v1${config?.path}`, {
+                method: 'POST',
+                headers: this.__configureHeaders(config.body, config.contentType),
+                body: config.body,
+                dispatcher: this.__currentDispatcher
+            });
 
-        return await this.__handleResponse<T>(`${BASE_URL}/api/v1${config.path}`, body, schema);
+            return await this.__handleResponse<T>(`${BASE_URL}/api/v1${config.path}`, body, schema);
+        };
+
+        const handler = await this.__withErrorHandler(callback as (config: AllConfigs, schema: z.ZodSchema) => Promise<T>);
+
+        return await handler(config, schema);
     };
 };

@@ -11,11 +11,6 @@ export const AminoDorksConfigSchema = z.object({
     enableLogging: z.boolean().optional(),
     deviceId: z.string().min(82).max(82).optional(),
     proxies: z.array(z.string()).optional(),
-    undici: z.object({
-        connections: z.number().int().positive().default(20),
-        keepAliveTimeout: z.number().int().nonnegative().default(60_000),
-        keepAliveMaxTimeout: z.number().int().nonnegative().default(60_000),
-    }).optional(),
     httpWorkflow: z.instanceof(HttpWorkflow).optional(),
     account: AccountSchema.optional(),
     quicklru: z.object({

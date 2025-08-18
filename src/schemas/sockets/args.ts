@@ -1,4 +1,4 @@
-import { Arg } from "./sockets";
+import { Arg } from './sockets';
 
 export class ArgImpl implements Arg {
     readonly rawValue: string;

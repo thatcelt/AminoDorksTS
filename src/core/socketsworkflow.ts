@@ -228,7 +228,7 @@ export class SocketWorkflow {
                 ndcId: ndcId,
                 threadId: threadId,
                 joinRole: 2,
-                id: "2154531"
+                id: '2154531'
             },
             t: 112
         }));

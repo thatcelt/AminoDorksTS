@@ -40,7 +40,7 @@ export class AminoDorks {
         initLogger(!!config.enableLogging);
         initQuickLRU(config.quicklru?.maxAge, config.quicklru?.maxSize);
         
-        this.__httpWorkflow = config.httpWorkflow || new HttpWorkflow(config.apiKey, this.__config.deviceId, config.undici);
+        this.__httpWorkflow = config.httpWorkflow || new HttpWorkflow(config.apiKey, this.__config.deviceId, this.__config.proxies);
     };
 
     public get account(): Account {

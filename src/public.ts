@@ -39,6 +39,11 @@ export const StatusUnion = z.union([
     z.literal('disable')
 ]);
 
+export const FeatureDurationUnion = z.union([
+    z.literal(1),
+    z.literal(2)
+]);
+
 export const EnviromentContextSchema = z.object({
     enviroment: EnviromentUnion,
     ndcId: z.number().optional()
@@ -106,8 +111,8 @@ export const EmbedSchema = z.object({
     id: z.string().optional(),
     type: z.number().optional(),
     link: z.string().optional(),
-    title: z.string(),
-    content: z.string(),
+    title: z.string().optional(),
+    content: z.string().optional(),
     thumbnail: z.string().optional()
 });
 
@@ -132,6 +137,7 @@ export type UsersType = z.infer<typeof UsersTypeUnion>;
 export type PostType = z.infer<typeof PostTypeUnion>;
 export type ThreadType = z.infer<typeof ThreadTypeUnion>;
 export type Status = z.infer<typeof StatusUnion>;
+export type FeatureDuration = z.infer<typeof FeatureDurationUnion>;
 export type EnviromentContext = z.infer<typeof EnviromentContextSchema>;
 export type UpdateEmailBuilder = z.infer<typeof UpdateEmailBuilderSchema>;
 export type StartSize = z.infer<typeof StartSizeSchema>;

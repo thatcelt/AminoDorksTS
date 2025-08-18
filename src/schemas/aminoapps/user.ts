@@ -1,10 +1,13 @@
 import { z } from 'zod';
+import { CustomTitleSchema } from './customTitle';
+import { AvatarFrameSchema } from './avatarFrame';
 
 export const UserSchema = z.object({
   status: z.number(),
   itemsCount: z.number().optional(),
   uid: z.string(),
   modifiedTime: z.string().optional(),
+  avatarFrame: AvatarFrameSchema.nullable().optional(),
   followingStatus: z.number().optional(),
   onlineStatus: z.number().optional(),
   accountMembershipStatus: z.number().optional(),
@@ -28,6 +31,9 @@ export const UserSchema = z.object({
   createdTime: z.string().optional(),
   storiesCount: z.number().optional(),
   blogsCount: z.number().optional(),
+  extensions: z.object({
+    customTitles: z.array(CustomTitleSchema)
+  }).nullable().optional()
 });
 
 export type User = z.infer<typeof UserSchema>;

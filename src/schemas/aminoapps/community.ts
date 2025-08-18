@@ -50,6 +50,7 @@ export const CommunitySchema = z.object({
   name: z.string(),
   templateId: z.number(),
   createdTime: z.string(),
+  content: z.string().nullable().optional()
 });
 
 export type Agent = z.infer<typeof AgentSchema>;

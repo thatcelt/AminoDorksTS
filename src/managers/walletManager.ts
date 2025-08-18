@@ -12,13 +12,13 @@ import { PlayLotteryResponse, PlayLotteryResponseSchema } from '../schemas/respo
 import { getTimezone } from '../utils/utils';
 
 export class WalletManager implements APIManager {
-    endpoint: Safe<string>;
+    endpoint: Safe<string> = '/g/s';
 
     private readonly __ndcId: MayUndefined<number>;
     private readonly __httpWorkflow: HttpWorkflow;
 
     constructor(context: EnviromentContext, httpWorkflow: HttpWorkflow) {
-        this.endpoint = `/x${context.ndcId}/s`;
+        if (context.ndcId) this.endpoint = `/x${context.ndcId}/s`;
         this.__ndcId = context.ndcId;
         this.__httpWorkflow = httpWorkflow;
     };
@@ -71,5 +71,21 @@ export class WalletManager implements APIManager {
                 timestamp: Date.now()
             })
         }, PlayLotteryResponseSchema);
+    };
+
+    public purchaseFrame = async (frameId: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `${this.endpoint}/store/purchase`,
+            body: JSON.stringify({
+                objectId: frameId,
+                objectType: 122,
+                v: 1,
+                paymentContext: {
+                    discountStatus: 0,
+                    isAutoRenew: false
+                },
+                timestamp: Date.now(),
+            })
+        }, BasicResponseSchema);
     };
 };
