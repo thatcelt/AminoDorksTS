@@ -43,7 +43,7 @@ export const ThreadSchema = z.object({
   author: UserSchema,
   extensions: z.object({
     fansOnly: z.boolean().optional(),
-    lastMembersSummaryUpdateTime: z.number(),
+    lastMembersSummaryUpdateTime: z.number().nullable().optional(),
     vvChatJoinType: z.number().optional(),
     visibility: z.number().optional(),
     language: z.string().optional(),
