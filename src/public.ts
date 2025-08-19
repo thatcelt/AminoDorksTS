@@ -78,7 +78,7 @@ export const WikiBuilderSchema = z.object({
 
 export const CreateThreadBuilderSchema = z.object({
     initialMessageContent: z.string().optional(),
-    inviteeUserIds: z.array(z.string()).min(1),
+    inviteeUids: z.array(z.string()).min(1),
     title: z.string().optional(),
     content: z.string().optional(),
 });
