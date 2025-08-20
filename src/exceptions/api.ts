@@ -30,6 +30,10 @@ export class AminoDorksAPIError extends Error {
     }
 
     static readonly errors: Record<number, ApiErrorData> = {
+        1: {
+            message: 'JSON body parse error.',
+            name: 'AminoDorksError.JsonParseError',
+        },
         100: {
             message: 'Unsupported service. Your client may be out of date. Please update it to the latest version.',
             name: 'AminoDorksError.UnsupportedService',
@@ -277,6 +281,10 @@ export class AminoDorksAPIError extends Error {
         1627: {
             message: 'No more reputations available for voice chat.',
             name: 'AminoDorksError.ApiErrChatVvchatNoMoreReputations',
+        },
+        1628: {
+            message: 'Sorry, you cannot pick this member.',
+            name: 'AminoDorksError.CannotPickMember',
         },
         1637: {
             message: 'This member was previously kicked by the organizer and cannot be reinvited.',

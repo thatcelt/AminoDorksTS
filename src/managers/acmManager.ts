@@ -73,4 +73,18 @@ export class ACMManager implements APIManager {
             })
         }, BasicResponseSchema);
     };
+
+    public giveCuratorship = async (userId: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendUrlEncoded<BasicResponse>({
+            path: `${this.endpoint}/user-profile/${userId}/curator`,
+            contentType: 'application/x-www-form-urlencoded',
+        }, BasicResponseSchema);
+    };
+
+    public giveLeadership = async (userId: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendUrlEncoded<BasicResponse>({
+            path: `${this.endpoint}/user-profile/${userId}/leader`,
+            contentType: 'application/x-www-form-urlencoded',
+        }, BasicResponseSchema);
+    };
 };
