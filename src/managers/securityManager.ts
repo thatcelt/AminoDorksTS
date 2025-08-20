@@ -150,24 +150,40 @@ export class SecurityManager implements APIManager {
         return await this.__updatePublicKey(sessionData.userId);
     };
 
-    public register = async (email: Safe<string>, password: Safe<string>, code: Safe<string>, nickname: Safe<string>, deviceId?: Safe<string>): Promise<BasicResponse> => {
+    public register = async (token: Safe<string>, password: Safe<string>, nickname: Safe<string>, deviceId?: Safe<string>): Promise<BasicResponse> => {
         const chosenDeviceId = deviceId || this.__httpWorkflow.getHeader('NDCDEVICEID');
 
         return await this.__httpWorkflow.sendEarlyPost<BasicResponse>({
-            path: `${this.endpoint}/auth/register`,
+            path: `${this.endpoint}/auth/login`,
             body: JSON.stringify({
-                secret: `0 ${password}`,
+                secret: `30 ${token}`,
+                secret2: `0 ${password}`,
                 deviceID: chosenDeviceId,
-                email: email,
                 clientType: 100,
                 nickname: nickname,
-                validationContext: {
-                    data: { code: code },
-                    type: 1,
-                    identity: email
-                },
-                type: 1,
-                identity: email,
+                latitude: 0,
+                longitude: 0,
+                address: null,
+                clientCallbackURL: 'aminoapp://relogin',
+                deviceID3: 'FF1C74F61CE6248F53B0B2712591EFC5E3462A48CB58', // idk where it comes from
+                deviceID4: 'FF1CB6589FC6AB0DC82CF12099D1C2D40AB994E8410C',
+                deviceID5: 'FF1CF559EEC104D2C3D8635600D165ED69EA9C580BAD',
+                val1: 85,
+                val2: 84000780,
+                timestamp: Date.now()
+            })
+        }, BasicResponseSchema);
+    };
+
+    public checkAccountExist = async (token: Safe<string>, deviceId?: Safe<string>): Promise<BasicResponse> => {
+        const chosenDeviceId = deviceId || this.__httpWorkflow.getHeader('NDCDEVICEID');
+
+        return await this.__httpWorkflow.sendEarlyPost<BasicResponse>({
+            path: `${this.endpoint}/auth/account_exist_check`,
+            body: JSON.stringify({
+                secret: `30 ${token}`,
+                deviceID: chosenDeviceId,
+                clientType: 100,
                 timestamp: Date.now()
             })
         }, BasicResponseSchema);

@@ -87,7 +87,14 @@ export class HttpWorkflow {
     };
 
     private __handleResponse = async <T>(fullPath: string, body: BodyReadable & Dispatcher.BodyMixin, schema: z.ZodSchema): Promise<T> => {
-        const jsonBody = await body.json();
+        let jsonBody: unknown;
+        
+        try {
+            jsonBody = await body.json();
+        } catch {
+            throw new AminoDorksAPIError(1, { message: `Failed to parse response body: ${await body.text()}` });
+        };
+
         const responseSchema = BasicResponseSchema.parse(jsonBody);
         LOGGER.child({ path: fullPath }).info(responseSchema['api:statuscode']);
 
@@ -97,13 +104,13 @@ export class HttpWorkflow {
     };
 
     private __withErrorHandler = async <T>(requestFunction: (config: AllConfigs, schema: z.ZodSchema) => Promise<T>) => {
-        return async (config: AllConfigs, schema: z.ZodSchema) => {
+        return async (config: AllConfigs, schema: z.ZodSchema): Promise<T> => {
             try {
                 return await requestFunction(config, schema);
             } catch (error) {
                 if (this.__currentDispatcher && this.__proxies.length) {
                     this.__switchProxy();
-                    return await requestFunction(config, schema);
+                    return await (await this.__withErrorHandler(requestFunction))(config, schema);
                 } else if (this.__currentDispatcher && !this.__proxies.length) {
                     LOGGER.info('No proxies left. Swtiched to no proxy mode.');
                     this.__currentDispatcher = undefined;

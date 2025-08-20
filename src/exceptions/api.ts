@@ -8,7 +8,7 @@ export class AminoDorksAPIError extends Error {
 
     constructor(code: number, data: ApiErrorData) {
         super(data.message);
-        this.name = data.name || `ApiError${code}`;
+        this.name = data.name || `AminoDorksAPIError.${code}`;
         this.code = code;
 
         if (Error.captureStackTrace) {
@@ -26,7 +26,7 @@ export class AminoDorksAPIError extends Error {
         const error = this.get(code);
         if (error) throw error;
 
-        throw new AminoDorksAPIError(code, { message: `Unknown API error code: ${code}` });
+        throw new AminoDorksAPIError(code, { message: `Unknown error code: ${code}.` });
     }
 
     static readonly errors: Record<number, ApiErrorData> = {
@@ -73,6 +73,10 @@ export class AminoDorksAPIError extends Error {
         200: {
             message: 'Invalid account or password.',
             name: 'AminoDorksError.InvalidAccountOrPassword',
+        },
+        203: {
+            message: 'Login with your Google account failed. Please try again or log in with your email.',
+            name: 'AminoDorksError.GoogleLoginFailed',
         },
         210: {
             message: 'This account is disabled.',
@@ -133,6 +137,10 @@ export class AminoDorksAPIError extends Error {
         240: {
             message: 'Sorry, the max length of members title is limited to 20.',
             name: 'AminoDorksError.ReachedTitleLength',
+        },
+        241: {
+            message: 'This email provider has been flagged for use in spamming.',
+            name: 'AminoDorksError.InvalidEmailProvider',
         },
         246: {
             message: 'Account has been deleted.',

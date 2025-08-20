@@ -253,9 +253,7 @@ export class SocketWorkflow {
     public sendRecording = async (ndcId: Safe<number>, threadId: Safe<string>) => {
         this.send(JSON.stringify({
             o: {
-                actions: [
-                    "Recording"
-                ],
+                actions: ['Recording'],
                 target: `ndc://x${ndcId}/chat-thread/${threadId}`,
                 ndcId: ndcId,
                 params: {
@@ -270,9 +268,7 @@ export class SocketWorkflow {
     public sendEndRecording = async (ndcId: Safe<number>, threadId: Safe<string>, duration: Safe<number>) => {
         this.send(JSON.stringify({
             o: {
-                actions: [
-                    "Recording"
-                ],
+                actions: ['Recording'],
                 target: `ndc://x${ndcId}/chat-thread/${threadId}`,
                 ndcId: ndcId,
                 params: {
