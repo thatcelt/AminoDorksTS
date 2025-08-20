@@ -17,6 +17,7 @@ import initLogger, { LOGGER } from '../utils/logger';
 import initQuickLRU from '../utils/qucklru';
 import { SocketWorkflow } from './socketsworkflow';
 import { generateDeviceId } from '../utils/crypt';
+import { ACMManager } from '../managers/acmManager';
 
 export class AminoDorks {
     private __config: AminoDorksConfig;
@@ -31,6 +32,7 @@ export class AminoDorks {
     private __postManager?: PostManager;
     private __threadManager?: ThreadManager;
     private __adminManager?: AdminManager;
+    private __acmManager?: ACMManager;
 
     constructor(config: AminoDorksConfig) {
         this.__config = config;
@@ -114,18 +116,34 @@ export class AminoDorks {
         return this.__adminManager;
     };
 
+    get acm(): ACMManager {
+        if (!this.__acmManager) {
+            if (!this.__config.context.ndcId) {
+                LOGGER.fatal(this.__config.context.ndcId, 'ndcId is not defined. Use .as to set ndcId.');
+                process.exit(0);
+            };
+            return this.__acmManager = new ACMManager(this.__config.context.ndcId, this.__httpWorkflow);
+        };
+        
+        return this.__acmManager;
+    };
+
     get socket(): SocketWorkflow {
         if (!this.__socketWorkflow) return this.__socketWorkflow = new SocketWorkflow(this);
 
         return this.__socketWorkflow;
     };
 
-    public uploadMedia = async (file: Safe<Buffer>, type: Safe<MediaType>): Promise<UploadMediaResponse> => {
+    private __basicUpload = async (path: Safe<string>, file: Safe<Buffer>, type: Safe<MediaType>): Promise<UploadMediaResponse> => {
         return await this.__httpWorkflow.sendBuffer<UploadMediaResponse>({
-            path: `/g/s/media/upload`,
+            path: path,
             body: file,
-            contentType: type
+            contentType: `${type}; application/octet-stream`
         }, UploadMediaResponseSchema);
+    };
+
+    public uploadMedia = async (file: Safe<Buffer>, type: Safe<MediaType>): Promise<UploadMediaResponse> => {
+        return await this.__basicUpload('/g/s/media/upload', file, type);
     };
 
     public getLinkResolution = async (link: Safe<string>): Promise<LinkInfo> => {

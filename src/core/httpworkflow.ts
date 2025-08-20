@@ -92,7 +92,7 @@ export class HttpWorkflow {
         try {
             jsonBody = await body.json();
         } catch {
-            throw new AminoDorksAPIError(1, { message: `Failed to parse response body: ${await body.text()}` });
+            throw new AminoDorksAPIError(1, { message: `Failed to parse response body` });
         };
 
         const responseSchema = BasicResponseSchema.parse(jsonBody);

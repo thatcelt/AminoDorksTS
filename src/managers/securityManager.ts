@@ -219,7 +219,7 @@ export class SecurityManager implements APIManager {
         const deviceId = this.__httpWorkflow.getHeader('NDCDEVICEID');
         
         return await this.__httpWorkflow.sendPost<BasicResponse>({
-            path: `${this.endpoint}/auth/update-emaiil`,
+            path: `${this.endpoint}/auth/update-email`,
             body: JSON.stringify({
                 deviceID: deviceId,
                 secret: `0 ${builder.password}`,
@@ -253,6 +253,18 @@ export class SecurityManager implements APIManager {
             body: JSON.stringify({
                 deviceID: this.__httpWorkflow.getHeader('NDCDEVICEID'),
                 secret: `0 ${password}`
+            })
+        }, BasicResponseSchema);
+    };
+
+    public disconnectGoogle = async (password: Safe<string>): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `${this.endpoint}/auth/disconnect`,
+            body: JSON.stringify({
+                deviceID: this.__httpWorkflow.getHeader('NDCDEVICEID'),
+                secret: `0 ${password}`,
+                type: 30,
+                timestamp: Date.now()
             })
         }, BasicResponseSchema);
     };

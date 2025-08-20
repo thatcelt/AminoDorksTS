@@ -78,6 +78,10 @@ export class AminoDorksAPIError extends Error {
             message: 'Login with your Google account failed. Please try again or log in with your email.',
             name: 'AminoDorksError.GoogleLoginFailed',
         },
+        208: {
+            message: 'Google account disconnect is not allowed.',
+            name: 'AminoDorksError.GoogleDisconnectNotAllowed',
+        },
         210: {
             message: 'This account is disabled.',
             name: 'AminoDorksError.AccountDisabled',
@@ -225,6 +229,10 @@ export class AminoDorksAPIError extends Error {
         806: {
             message: 'You have reached the limit for community creation.',
             name: 'AminoDorksError.CommunityCreateLimitReached',
+        },
+        811: {
+            message: 'Media crop out of range.',
+            name: 'AminoDorksError.MediaCropOutOfRange',
         },
         814: {
             message: 'This Community is disabled.',
