@@ -15,7 +15,7 @@ export class AdminManager implements APIManager {
         this.__httpWorkflow = httpWorkflow;
     };
 
-    public banUser = async (userId: Safe<string>, reason?: Safe<string>): Promise<BasicResponse> => {
+    public ban = async (userId: Safe<string>, reason?: Safe<string>): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
             path: `${this.endpoint}/user-profile/${userId}/ban`,
             body: JSON.stringify({
@@ -28,7 +28,7 @@ export class AdminManager implements APIManager {
         }, BasicResponseSchema);
     };
 
-    public unbanUser = async (userId: Safe<string>, reason?: Safe<string>): Promise<BasicResponse> => {
+    public unban = async (userId: Safe<string>, reason?: Safe<string>): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
             path: `${this.endpoint}/user-profile/${userId}/unban`,
             body: JSON.stringify({
@@ -122,7 +122,7 @@ export class AdminManager implements APIManager {
         }, BasicResponseSchema);
     };
 
-    public addFeaturedUser = async (userId: Safe<string>, days: FeatureDuration = 1): Promise<BasicResponse> => {
+    public addFeature = async (userId: Safe<string>, days: FeatureDuration = 1): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
             path: `${this.endpoint}/user-profile/${userId}/admin`,
             body: JSON.stringify({
@@ -162,7 +162,7 @@ export class AdminManager implements APIManager {
         }, BasicResponseSchema);
     };
 
-    public warnUser = async (userId: Safe<string>, title: Safe<string>, content: Safe<string>): Promise<BasicResponse> => {
+    public warn = async (userId: Safe<string>, title: Safe<string>, content: Safe<string>): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
             path: `${this.endpoint}/notice`,
             body: JSON.stringify({
@@ -174,6 +174,26 @@ export class AdminManager implements APIManager {
                     objectType: 0
                 },
                 penaltyType: 0,
+                adminOpNote: {},
+                noticeType: 7,
+                timestamp: Date.now()
+            })
+        }, BasicResponseSchema);
+    };
+
+    public strike = async (userId: Safe<string>, title: Safe<string>, content: Safe<string>, duration: Safe<number> = 86400): Promise<BasicResponse> => {
+        return await this.__httpWorkflow.sendPost<BasicResponse>({
+            path: `${this.endpoint}/notice`,
+            body: JSON.stringify({
+                targetUid: userId,
+                title: title,
+                content: content,
+                attachedObject: {
+                    objectId: userId,
+                    objectType: 0
+                },
+                penaltyType: 1,
+                penaltyValue: duration,
                 adminOpNote: {},
                 noticeType: 7,
                 timestamp: Date.now()
