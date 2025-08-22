@@ -11,7 +11,7 @@ export const CACHE_FILENAME = 'cache.json'
 export const INVITE_CODE_DEFAULT_DURATION = 259200;
 export const ONLINE_DEFAULT_DURATION = 86400;
 export const WEBSOCKET_RECONNECT_TIME = 450000;
-export const CURRENT_VERSION = '2.12.15';
+export const CURRENT_VERSION = '2.12.17';
 export const TELEGRAM_URL = 'https://t.me/aminodorks';
 
 // Structures
@@ -34,7 +34,8 @@ export const API_HEADERS = {
     'User-Agent': USER_AGENT,
     'CONNECTION': 'Keep-Alive',
     'NDCLANG': 'ru',
-    'Content-Type': 'application/json; charset=utf8'
+    'Content-Type': 'application/json; charset=utf8',
+    'Accept': '*/*'
 };
 
 export const GENERATORS_HEADERS = {

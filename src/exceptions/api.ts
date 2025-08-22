@@ -374,6 +374,10 @@ export class AminoDorksAPIError extends Error {
             message: 'Invalid Request. Please update to the latest version. If the problem continues, please contact us.',
             name: 'AminoDorksError.InvalidRequest',
         },
+        11102: {
+            message: 'Invalid Request. Please update to the latest version. If the problem continues, please contact us.',
+            name: 'AminoDorksError.InvalidRequest',
+        },
         99001: {
             message: 'Sorry, the name is invalid.',
             name: 'AminoDorksError.InvalidName',

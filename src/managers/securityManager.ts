@@ -247,12 +247,14 @@ export class SecurityManager implements APIManager {
         }, BasicResponseSchema);
     };
 
-    public deleteAccount = async (password: Safe<string>): Promise<BasicResponse> => {
+    public deleteAccount = async (email: Safe<string>, password: Safe<string>): Promise<BasicResponse> => {
         return await this.__httpWorkflow.sendPost<BasicResponse>({
             path: `${this.endpoint}/account/delete-request`,
             body: JSON.stringify({
                 deviceID: this.__httpWorkflow.getHeader('NDCDEVICEID'),
-                secret: `0 ${password}`
+                secret: `0 ${password}`,
+                email: email,
+                timestamp: Date.now()
             })
         }, BasicResponseSchema);
     };
