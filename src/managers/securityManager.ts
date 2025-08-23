@@ -80,7 +80,7 @@ export class SecurityManager implements APIManager {
         return getAccountResponse.account;
     };
 
-    public login = async (email: Safe<string>, password: Safe<string>): Promise<LoginResponse> => {
+    public login = async (email: Safe<string>, password: Safe<string>, loginType: Safe<number> = 100): Promise<LoginResponse> => {
         const cachedAccount = QUICKLRU.get(`${email}-${password}`);
         if (cachedAccount && (await this.__getAccountWithSession(cachedAccount))) return this.__loginFromCache(cachedAccount);
 
@@ -91,35 +91,61 @@ export class SecurityManager implements APIManager {
                 v: 2,
                 secret: `0 ${password}`,
                 deviceID: this.__config.deviceId,
-                clientType: 100,
+                clientType: loginType,
                 action: 'normal',
                 timestamp: Date.now()
             })
         }, LoginResponseSchema);
 
-        try {
-            this.account = AccountSchema.parse({
-                sessionId: loginResponse.sid,
-                deviceId: this.__config.deviceId,
-                user: loginResponse.userProfile
-            });
+        this.account = AccountSchema.parse({
+            sessionId: loginResponse.sid,
+            deviceId: this.__config.deviceId,
+            user: loginResponse.userProfile
+        });
 
-            this.__httpWorkflow.headers = {
-                AUID: loginResponse.userProfile.uid,
-                NDCAUTH: `sid=${loginResponse.sid}`
-            };
+        this.__httpWorkflow.headers = {
+            AUID: loginResponse.userProfile.uid,
+            NDCAUTH: `sid=${loginResponse.sid}`
+        };
 
-            cacheSet(`${email}-${password}`, {
-                account: this.account,
-                email: email,
-                password: password
-            });
+        cacheSet(`${email}-${password}`, {
+            account: this.account,
+            email: email,
+            password: password
+        });
 
-            await this.__updatePublicKey(loginResponse.userProfile.uid);
-        } catch {
-            LOGGER.error(loginResponse['api:message']);
-        }
+        await this.__updatePublicKey(loginResponse.userProfile.uid);
         
+        return loginResponse;
+    };
+
+    public loginPhone = async (phone: Safe<string>, password: Safe<string>, loginType: Safe<number> = 100): Promise<LoginResponse> => {
+        const loginResponse = await this.__httpWorkflow.sendEarlyPost<LoginResponse>({
+            path: `${this.endpoint}/auth/login`,
+            body: JSON.stringify({
+                phoneNumber: phone,
+                v: 2,
+                secret: `0 ${password}`,
+                deviceID: this.__config.deviceId,
+                clientType: loginType,
+                action: 'normal',
+                timestamp: Date.now()
+            })
+        }, LoginResponseSchema);
+
+        this.account = AccountSchema.parse({
+            sessionId: loginResponse.sid,
+            deviceId: this.__config.deviceId,
+            user: loginResponse.userProfile
+        });
+
+        this.__httpWorkflow.headers = {
+            AUID: loginResponse.userProfile.uid,
+            NDCAUTH: `sid=${loginResponse.sid}`
+        };
+
+        await this.__updatePublicKey(loginResponse.userProfile.uid);
+
         return loginResponse;
     };
 

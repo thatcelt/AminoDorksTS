@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { UserSchema } from './aminoapps/user';
 
 export const AccountSchema = z.object({
-    sessionId: z.string().min(254).max(254),
+    sessionId: z.string(),
     deviceId: z.string().min(82).max(82),
     user: UserSchema
 });
