@@ -87,20 +87,20 @@ export class HttpWorkflow {
     };
 
     private __handleResponse = async <T>(fullPath: string, body: BodyReadable & Dispatcher.BodyMixin, schema: z.ZodSchema): Promise<T> => {
-        let jsonBody: unknown;
+        let rawBody: unknown;
         
         try {
-            jsonBody = await body.json();
+            rawBody = await body.json();
         } catch {
-            throw new AminoDorksAPIError(1, { message: `Failed to parse response body` });
+            rawBody = JSON.parse(await body.text());
         };
 
-        const responseSchema = BasicResponseSchema.parse(jsonBody);
+        const responseSchema = BasicResponseSchema.parse(rawBody);
         LOGGER.child({ path: fullPath }).info(responseSchema['api:statuscode']);
 
         if (responseSchema['api:statuscode'] != 0) AminoDorksAPIError.throw(responseSchema['api:statuscode']);
 
-        return schema.parse(jsonBody) as T;
+        return schema.parse(rawBody) as T;
     };
 
     private __withErrorHandler = async <T>(requestFunction: (config: AllConfigs, schema: z.ZodSchema) => Promise<T>) => {
