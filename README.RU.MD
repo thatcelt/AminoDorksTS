@@ -12,45 +12,49 @@
 ##[README on English](https://github.com/thatcelt/AminoDorksTS/blob/master/README.MD)
 ##[README на Русском](https://github.com/thatcelt/AminoDorksTS/blob/master/README.RU.MD)
 
-## Содержание
+---
+
+## Оглавление
 -----------------
 
-* [Функции](#функции)
-* [Начало Работы](#начало-работы)
+* [Особенности](#особенности)
+* [Начало работы](#начало-работы)
 * [Использование](#использование)
-* [API Документация (УСТАРЕЛО)](#api-документация)
-* [Вклад](#вклад)
+* [Документация](#документация)
+* [Участие в разработке](#участие-в-разработке)
 * [Лицензия](#лицензия)
 
-## Функции
+## Особенности
 --------
 
-АминоДоркс содержит много функций как библиотека для AminoApps, например
-* Много методов для взаимодействия с API
-* Генерация специальных подписей из Android с KeyStore обходом
-* Неограниченное количества запросов для генерации подписей
-* Огромный приоритет для создания пользовательских ботов
-* Поддержка большого количества типов
+AminoDorks предоставляет множество возможностей как библиотека для AminoApps, например:
+* Большое количество методов для взаимодействия с API
+* Генерация специальной подписи с Android с обходом KeyStore
+* Отсутствие ограничений скорости для генерации подписей
+* Высокий приоритет для создания пользовательских ботов для нагрузочного тестирования
+* Поддержка множества типов взаимодействия с API
+* Обширная система кэширования аккаунтов
 * [Полностью открытый исходный код серверной части](https://github.com/thatcelt/dorks_api)
 
-## Начало Работы
+## Начало работы
 ---------------
 
-Чтобы начать работать с АминоДоркс, производите следующие действия:
-1. Создай новый проект: `npm init`
+Чтобы начать работу с AminoDorks, выполните следующие шаги:
+1. Инициализируйте npm-пакет: `npm init`
 2. Установите TypeScript: `npm i -g typescript`
-3. Инициализируй TypeScript конфигурацию: `tsc --init`
-4. Установите пакет: `npm i amino.dorks`
-5. Получите ваш индивидуальный API_KEY из нашего [Телеграм Бота](https://t.me/aminodorks_bot)
+3. Инициализируйте и настройте конфигурацию TypeScript: `tsc --init`
+4. Установите пакет через npm: `npm i amino.dorks`
+5. Получите свой индивидуальный API_KEY у нашего [Telegram-бота](https://t.me/aminodorks_bot)
 
 ## Использование
 -----
+
 ### Базовая авторизация
 
 ```typescript
 import { AminoDorks } from 'amino.dorks';
 
-const main = async () => {
+(async () => {
     const aminoDorks = new AminoDorks({
         apiKey: 'API_KEY',
         context: {
@@ -59,17 +63,15 @@ const main = async () => {
     });
     const response = await aminoDorks.security.login('email@example.com', 'password');
     console.log(`Logged in ${response.userProfile.nickname}`);
-};
-
-main();
+})();
 ```
 
-### Действия в других сообществах
+### Действия в других сообществах
 
 ```typescript
 import { AminoDorks } from 'amino.dorks';
 
-const main = async () => {
+(async () => {
     const aminoDorks = new AminoDorks({
         apiKey: 'API_KEY',
         context: {
@@ -78,204 +80,354 @@ const main = async () => {
     });
     await aminoDorks.security.login('email@example.com', 'password');
     
-    const ndc = aminoDorks.as('NDC_ID') // теперь мы можем использовать экземпляр для взаимодействия с сообществом
-    await ndc.playLottery() // например, чтобы сыграть в лотерею
-};
-
-main();
+    const ndc = aminoDorks.as('NDC_ID') // теперь можно использовать этот экземпляр для взаимодействия с сообществом
+    await ndc.playLottery() // например, сыграть в лотерею и получить монеты
+})();
 ```
 
-## API Документация (УСТАРЕЛО)
+### Настройка с использованием WebSocket
 
------------------
+```typescript
+import { AminoDorks } from 'amino.dorks';
+import { MessageEvent } from 'amino.dorks/dist/schemas/sockets/sockets';
 
-### 1. `AminoDorks(apiKey: string)`
-Основной класс для взаимодействия с глобальным пространством приложения
-* apiKey - API_KEY из [Telegram Bot](https://t.me/aminodorks_bot)
+(async () => {
+    const aminoDorks = new AminoDorks({
+        apiKey: 'API_KEY',
+        context: {
+            enviroment: 'global'
+        }
+    });
+    await aminoDorks.security.login('email@example.com', 'password');
+    
+    // обработка при старте сокета
+    aminoDorks.socket.on(async () => {
+        // do something
+    });
 
-#### Характеристики AminoDorks
+    // обработка сообщений
+    aminoDorks.socket.on('message', async (ndc: AminoDorks, message: MessageEvent ) => {
+        // do something
+    });
+})();
+```
 
-1. `AminoDorks.accountInfo: UserProfile` - Информация о вашем профиле после авторизации
-2. `AminoDorks.aminodorksNDC: AminoDorksNDC` - Экземпляр класса для взаимодействия с сообществом
+## Документация
 
-#### Методы AminoDorks
+### 1. `AminoDorks(config: AminoDorksConfig)`
 
-1. `setNdcId(ndcId: number): AminoDorksNDC` - Установите ndc id для взаимодействия с сообществом, возвращает клиент для него
+Главный класс для взаимодействия с API в глобальном пространстве приложения.
+config – конфигурация библиотеки, доступна в типе `AminoDorksConfig`...
+`AminoDorksConfig` =>
 
-2. `uploadMedia(file: Buffer): UploadMediaResponse` - Метод для загрузки медиафайлов на сервер aminoapps
+* apiKey – API_KEY, полученный у [Telegram-бота](https://t.me/aminodorks_bot),
+* context – контекст для библиотеки, можно найти в типе `EnviromentContext`,
+* ndcId – ID сообщества по умолчанию, при необходимости можно использовать метод `as` для смены,
+* enableLogging – включает логирование библиотеки (по умолчанию `false`),
+* deviceId – ID устройства по умолчанию,
+* proxies – массив прокси (socks4 или socks5), по умолчанию `[]`,
 
-3. `getLinkResolution(link: string): LinkResolutionResponse` - Метод для получения информации о ссылке
+#### Свойства AminoDorks
 
-4. `authenticate(email: string, password: string): UserProfile` - Метод для авторизации
-
-5. `authenticateSession(sessionId: string, deviceId: string): UserProfile` - Метод для авторизации с помощью идентификатора сессии
-
-6. `requestResetPassword(email: string): BasicResponse` - Метод для запроса сброса пароля
-
-7. `requestVerifyAccount(email: string): BasicResponse` - Метод для запроса верификации аккаунта
-
-8. `resetPassword(email: string, code: string, newPassword: string): BasicResponse` - Метод для сброса пароля
-
-9. `verifyAccount(email: string, code: string): BasicResponse` - Метод для верификации аккаунта
-
-10. `deleteAccount(password: string): BasicResponse` - Метод для удаления аккаунта
-
-11. `getCommunities(start: number = 0, size: number = 25): Promise<GetCommunitiesResponse>` - Метод для получения списка сообществ
-
-12. `searchCommunity(title: string): Promise<SearchCommunityResponse>` - Метод для поиска сообщества по названию
-
-13. `joinCommunity(ndcId: number): Promise<BasicResponse>` - Метод для присоединения к сообществу
-
-14. `leaveCommunity(ndcId: number): Promise<BasicResponse>` - Метод для выхода из сообщества
-
-15. `membershipRequest(ndcId: number, message?: string): Promise<BasicResponse>` - Метод для запроса участия в сообществе
-
-16. `changeAminoId(aminoId: string): Promise<BasicResponse>` - Метод для изменения идентификатора Амино
-
-17. `getWalletInfo(): Promise<GlobalResponses.GetWalletInfoResponse>` - Метод для получения информации о кошельке
-
-18. `getWalletHistory(start: number = 0, size: number = 25): Promise<GetWalletHistoryResponse>` - Метод для получения истории кошелька
-
-19. `getCommunnityOnLink(link: string): Promise<Community>` - Метод для получения сообщества по ссылке
-
------------------
-
-### 2. `AminoDorksNDC(httpWorkflow: HttpWorkflow, accountInfo: UserProfile, ndcId: number)`
-AminoDorksNDC - это класс для взаимодействия с сообществом. Он имеет те же методы, что и AminoDorks, но для конкретного сообщества.
-* httpWorkflow - экземпляр класса HttpWorkflow
-* accountInfo - профиль пользователя вашего аккаунта
-* ndcId - идентификатор сообщества
-
-#### Методы AminoDorksNDC
-
-1. `getInviteCodes(start: number = 0, size: number = 10): Promise<GetInviteCodesResponse>` - Метод для получения кодов приглашения
-
-2. `createInviteCode(duration: number = INVITE_CODE_DEFAULT_DURATION): Promise<InviteCode>` - Метод для создания кода приглашения
-
-3. `deleteInviteCode(invitationId: string): Promise<BasicResponse>` - Метод для удаления кода приглашения
-
-4. `getInfluencers(): Promise<GetUserProfilesResponse>` - Метод для получения списока инфлюенсеров
-
-5. `createBlog(title: string, content: string, builder: BlogBuilder = { mediaList: [] }): Promise<GetCreateBlogResponse>` - Метод для создания блога
-
-6. `createWiki(label: string, content: string, builder: WikiBuilder = { mediaList: [] }, keywords: string = SIGNATURE_STUB): Promise<GetCreateWikiResponse>` - Метод для создания вики
-
-7. `deleteBlog(blogId: string): Promise<BasicResponse>` - Метод для удаления блога
-
-8. `deleteWiki(itemId: string): Promise<BasicResponse>` - Метод для удаления вики
-
-9. `playLottery(timezone: number = GLOBAL_TIMEZONE): Promise<PlayLotteryResponse>` - Метод для участия в лотерее
-
-10. `sendActivityTime(timers: Timer[], timezone: number = GLOBAL_TIMEZONE): Promise<BasicResponse>` - Метод для отправки времени активности
-
-11. `setOnlineStatus(status: OnlineStatus, duration: number = 86400): Promise<BasicResponse>` - Метод для установки онлайн-статуса
-
-12. `getOnlineUsers(start: number = 0, size: number = 25): Promise<GetOnlineUsersResponse>` - Метод для получения списка онлайн-пользователей
-
-13. `getUserBlogs(userId: string, start: number = 0, size: number = 25): Promise<GetBlogsResponse>` - Метод для получения блогов пользователя
-
-14. `getUserWikis(userId: string, start: number = 0, size: number = 25): Promise<GetWikisResponse>` - Метод для получения вики пользователя
-
-15. `getPublicChatThreads(start: number = 0, size: number = 25, type: ChatThreadTypes = 'recommended'): Promise<GetChatThreadsResponse>` - Метод для получения списка публичных чатов
-
-16. `getPublicBlogs(start: number = 0, size: number = 25): Promise<GetPublicBlogsResponse>` - Метод для получения списка публичных блогов
-
-17. `getPublicBlogsPage(pageToken: string, size: number = 25): Promise<GetPublicBlogsResponse>` - Метод для получения страницы публичных блогов
-
-18. `hideUser(userId: string, reason: string = SIGNATURE_STUB): Promise<BasicResponse>` - Метод для скрытия пользователя
-
-19. `hideChatThread(threadId: string, reason: string = SIGNATURE_STUB): Promise<BasicResponse>` - Метод для скрытия чата
-
-20. `hidePost(objectId: string, postType: PostTypes, reason: string = SIGNATURE_STUB): Promise<BasicResponse>` - Метод для скрытия поста
-
-21. `unhideUser(userId: string, reason: string = SIGNATURE_STUB): Promise<BasicResponse>` - Метод для раскрытия пользователя
-
-22. `unhideChatThread(threadId: string, reason: string = SIGNATURE_STUB): Promise<BasicResponse>` - Метод для раскрытия чата
-
-23. `unhidePost(objectId: string, postType: PostTypes, reason: string = SIGNATURE_STUB): Promise<BasicResponse>` - Метод для раскрытия поста
-
-24. `banUser(userId: string, reason: string = SIGNATURE_STUB): Promise<BasicResponse>` - Метод для блокировки пользователя
-
-25. `unbanUser(userId: string, reason: string = SIGNATURE_STUB): Promise<BasicResponse>` - Метод для разблокировки пользователя
-
-### 3. `Реализованные методы`
-Методы для обоих классов `AminoDorks` и `AminoDorksNDC`
+1. `AminoDorks.account: Account` – информация о профиле пользователя после авторизации
+2. `AminoDorks.security: SecurityManager` – менеджер авторизации и данных аккаунта
+3. `AminoDorks.community: CommunityManager` – менеджер методов для сообществ
+4. `AminoDorks.wallet: WalletManager` – менеджер методов кошелька
+5. `AminoDorks.user: UserManager` – менеджер методов пользователей
+6. `AminoDorks.post: PostManager` – менеджер методов постов
+7. `AminoDorks.thread: ThreadManager` – менеджер методов чатов
+8. `AminoDorks.admin: AdminManager` – менеджер методов администрирования
+9. `AminoDorks.acm: ACMManager` – менеджер методов ACM
+10. `AminoDorks.socket: SocketWorkflow` – менеджер работы с сокетами
 
 #### Методы AminoDorks
 
-1. `getUserInfo(userId: string): Promise<GetUserInfoResponse>` - Метод для получения информации о пользователе
+1. `uploadMedia(file: Safe<Buffer>, type: Safe<MediaType>): Promise<UploadMediaResponse>` – загрузка медиафайлов
+2. `getLinkResolution(link: string): Promise<LinkInfo>` – получение информации по ссылке
+3. `getCommunityResolution(link: Safe<string>): Promise<Community>` – получение информации о сообществе по ссылке
+4. `getElapsedRealtime(): Promise<string>` – получение времени работы (нужно для сокетов)
+5. `as(ndcId: number): AminoDorks` – использование другого сообщества
 
-2. `getChatThreads(start: number, size: number): Promise<GetChatThreadsResponse>` - Метод для получения списка чатов
+### 2. `SecurityManager`
+Менеджер безопасности для методов авторизации и информации об аккаунте
 
-3. `getChatThread(threadId: string): Promise<GetChatThreadResponse>` - Метод для получения информации о чате
+#### Методы SecurityManager
 
-4. `getChatThreadUsers(threadId: string, start: number, size: number): Promise<GetChatThreadUsersResponse>` - Метод для получения списка пользователей в чате
+1. `getAccount(): Promise<MayUndefined<User>>` – получение информации об аккаунте  
 
-5. `joinChatThread(threadId: string): Promise<BasicResponse>` - Метод для присоединения к чату
+2. `login(email: Safe<string>, password: Safe<string>, loginType: Safe<number> = 100): Promise<LoginResponse>` – вход по email и паролю  
 
-6. `leaveChatThread(threadId: string): Promise<BasicResponse>` - Метод для выхода из чата
+3. `loginPhone(phone: Safe<string>, password: Safe<string>, loginType: Safe<number> = 100): Promise<LoginResponse>` – вход по номеру телефона  
 
-7. `createChatThread(startMessage: string, chatThreadSettings: ChatThreadSettings): Promise<GetChatThreadResponse>` - Метод для создания нового чата
+4. `loginWithSession(sessionId: Safe<string>, deviceId: Safe<string>): Promise<MayUndefined<BasicResponse>>` – вход с использованием sessionId  
 
-8. `inviteToChatThread(threadId: string, userIds: string[]): Promise<BasicResponse>` - Метод для приглашения пользователей в чат
+5. `register(token: Safe<string>, password: Safe<string>, nickname: Safe<string>, deviceId?: Safe<string>): Promise<BasicResponse>` – регистрация аккаунта  
 
-9. `kickFromChatThread(threadId: string, userId: string, allowRejoin: boolean): Promise<BasicResponse>` - Метод для исключения пользователя из чата
+6. `checkAccountExist(token: Safe<string>, deviceId?: Safe<string>): Promise<BasicResponse>` – проверка существования аккаунта  
 
-10. `getChatThreadMessages(threadId: string, size: number): Promise<BasicResponse>` - Метод для получения сообщений в чате
+7. `requestSecurityValidation(email: Safe<string>): Promise<BasicResponse>` – запрос кода подтверждения безопасности  
 
-11. `getChatThreadMessagesPage(threadId: string, size: number, pageToken: string): Promise<BasicResponse>` - Метод для получения страницы сообщений в чате
+8. `checkSecurityValidation(email: Safe<string>, code: Safe<string>): Promise<BasicResponse>` – проверка кода подтверждения  
 
-12. `getUserFollowing(followingArguments: FollowingArguments): Promise<GetUserProfilesResponse>` - Метод для получения списка пользователей, которых пользователь подписан
+9. `updateEmail(builder: UpdateEmailBuilder): Promise<BasicResponse>` – обновление email  
 
-13. `getUserFollowers(followingArguments: FollowingArguments): Promise<BasicResponse>` - Метод для получения списка пользователей, которые подписаны на пользователя
+10. `deleteAccount(email: Safe<string>, password: Safe<string>): Promise<BasicResponse>` – удаление аккаунта  
 
-14. `getBlogInfo(blogId: string): Promise<GetCreateBlogResponse>` - Метод для получения информации о блоге
+11. `disconnectGoogle(password: Safe<string>): Promise<BasicResponse>` – отвязка Google-аккаунта  
 
-15. `getWikiInfo(itemId: string): Promise<GetCreateWikiResponse>` - Метод для получения информации о вики
+### 3. `CommunityManager`
+Менеджер для работы с сообществами
 
-16. `getWallComments(userId: string, sorting: CommentsSorting, start: number, size: number): Promise<GetCommentsResponse>` - Метод для получения комментариев на стене пользователя
+#### Методы CommunityManager
 
-17. `sendMessage(threadId: string, content: string, messageType: MessageTypes, messageSettings?: MessageSettings): Promise<SendMessageResponse>` - Метод для отправки сообщения
+1. `get(ndcId: Safe<number>): Promise<Community>` – получение информации о сообществе  
 
-18. `sendEmbededMessage(threadId: string, content: string, embed: Embed, messageSettings?: MessageSettings): Promise<SendMessageResponse>` - Метод для отправки сообщения с Embed
+2. `getMany(startSize: StartSize = { start: 0, size: 25 }): Promise<Community[]>` – получение списка сообществ  
 
-19. `sendSticker(threadId: string, stickerId: string): Promise<SendMessageResponse>` - Метод для отправки стикера
+3. `search(title: Safe<string>): Promise<SearchCommunityResponse>` – поиск сообществ  
 
-20. `sendImage(mediaArguments: MediaArguments): Promise<SendMessageResponse>` - Метод для отправки изображения
+4. `join(ndcId: Safe<number>): Promise<BasicResponse>` – вступление в сообщество  
 
-21. `sendAudio(mediaArguments: MediaArguments): Promise<SendMessageResponse>` - Метод для отправки аудио
+5. `leave(ndcId: Safe<number>): Promise<BasicResponse>` – выход из сообщества  
 
-22. `deleteMessage(threadId: string, messageId: string): Promise<BasicResponse>` - Метод для удаления сообщения
+6. `sendMembershipRequest(ndcId: Safe<number>, message?: Safe<string>): Promise<BasicResponse>` – отправка запроса на вступление  
 
-23. `deleteMessageAsAdmin(threadId: string, messageId: string, reason: string): Promise<BasicResponse>` - Метод для удаления сообщения администратором
+7. `identifyInvitation(inviteCode: Safe<string>): Promise<IdentifyInvitationResponse>` – проверка пригласительного кода  
 
-24. `editChatThread(threadId: string, builder: EditChatThreadBuilder): Promise<GetChatThreadResponse>` - Метод для редактирования чата
+8. `getInviteCodes(startSize: StartSize): Promise<InviteCode[]>` – получение списка активных инвайтов
 
-25. `setChatThreadBackground(threadId: string, background: string): Promise<BasicResponse>` - Метод для установки фона чата
+9. `createInviteCode(duration: Safe<number> = INVITE_CODE_DEFAULT_DURATION): Promise<InviteCode>` – создание нового инвайта (только для лидеров и кураторов)  
 
-26. `addCoHosts(threadId: string, userIds: string[]): Promise<BasicResponse>` - Метод для добавления помощников
+10. `deleteInviteCode(invitationId: Safe<string>): Promise<BasicResponse>` – удаление инвайта по ID (нужны админские права)  
 
-27. `setViewOnly(editingArguments: EditChatArguments): Promise<BasicResponse>` - Метод для установки режима "Только для просмотра"
+11. `status(online: Safe<boolean>, duration: Safe<number> = ONLINE_DEFAULT_DURATION): Promise<BasicResponse>` – обновление статуса «онлайн/оффлайн»  
 
-28. `setCanInvite(editingArguments: EditChatArguments): Promise<BasicResponse>` - Метод для установки разрешения на приглашение
+12. `sendTimeChunks(timers: Timers): Promise<BasicResponse>` – отправка данных об активности пользователя
 
-29. `setCanTip(editingArguments: EditChatArguments): Promise<BasicResponse>` - Метод для установки разрешения на отправку монет
+### 4. `WalletManager`
+Менеджер для работы с кошельком
 
-30. `tipCoinsBlog(coins: number, blogId: string): Promise<BasicResponse>` - Метод для отправки монет на блог
+#### Методы WalletManager
 
-31. `tipCoinsChatThread(coins: number, threadId: string): Promise<BasicResponse>` - Метод для отправки монет в чат
+1. `get(): Promise<Wallet>` – получение информации о кошельке пользователя (баланс монет, лимиты и пр.)  
 
-32. `follow(userId: string): Promise<BasicResponse>` - Метод для подписки на пользователя
+2. `history(startSize: StartSize = { start: 0, size: 25 }): Promise<Transaction[]>` – история транзакций  
 
-33. `followMultiple(userId: string[]): Promise<BasicResponse>` - Метод для подписки на несколько пользователей
+3. `tipCoinsBlog(coins: Safe<number>, blogId: Safe<number>): Promise<BasicResponse>` – отправка монет блогу  
 
-## Вклад
-------------
+4. `tipCoinsChatThread(coins: Safe<number>, threadId: Safe<number>): Promise<BasicResponse>` – отправка монет в чат  
 
-Вы можете внести свой вклад в развитие библиотеки, создавая issues и pull-requests на GitHub.
+5. `playLottery(): Promise<BasicResponse>` – участие в ежедневной лотерее
 
-## License
--------
+6. `purchaseFrame(frameId: Safe<string>): Promise<BasicResponse>` – покупка рамки для профиля за монеты  
 
-АминоДоркс распространяется под лицензией MIT.
-Если вы будете использовать мои генераторы, сообщите мне об этом в [личку](https://t.me/celt_is_god)
+### 5. `UserManager`
+Менеджер для работы с пользователями
+
+#### Методы UserManager
+
+1. `get(userId: Safe<string>): Promise<User>` – получение информации о пользователе  
+
+2. `getMany(startSize: StartSize = { start: 0, size: 50 }, usersType: UsersType = 'recent'): Promise<User[]>` – список пользователей в сообществе  
+
+3. `getInOnline(startSize: StartSize = { start: 0, size: 50 }): Promise<User[]>` – список пользователей онлайн  
+
+4. `getThreadUsers(threadId: Safe<string>, startSize: StartSize = { start: 0, size: 100 }): Promise<User[]>` – пользователи в чате  
+
+5. `edit(builder: EditProfileBuilder): Promise<BasicResponse>` – редактирование профиля  
+
+6. `applyFrame(frameId: Safe<string>, applyToAll: Safe<boolean> = false): Promise<BasicResponse>` – применение рамки аватара  
+
+7. `kick(userId: Safe<string>, threadId: Safe<string>, allowRejoin: Safe<boolean> = false): Promise<BasicResponse>` – удаление пользователя из чата  
+
+8. `getFollowing(userId: Safe<string>, startSize: StartSize = { start: 0, size: 25 }): Promise<User[]>` – список тех, на кого подписан пользователь  
+
+9. `getFollowers(userId: Safe<string>, startSize: StartSize = { start: 0, size: 25 }): Promise<User[]>` – список подписчиков пользователя  
+
+10. `getWallComments(userId: Safe<string>, sorting: CommentsSorting = 'newest', startSize: StartSize = { start: 0, size: 25 }): Promise<Comment[]>` – комментарии на стене пользователя  
+
+11. `follow(userId: Safe<string>): Promise<BasicResponse>` – подписка на пользователя  
+
+12. `followMany(userIds: Safe<string[]>): Promise<BasicResponse>` – массовая подписка на нескольких пользователей  
+
+13. `unfollow(userId: Safe<string>): Promise<BasicResponse>` – отписка от пользователя  
+
+14. `sendComment(userId: Safe<string>, content: Safe<string>, respondTo?: Safe<string>): Promise<BasicResponse>` – отправка комментария на стену пользователя
+
+### 6. `PostManager`
+Менеджер для работы с постами и вики
+
+#### Методы PostManager
+
+1. `getBlog(blogId: Safe<string>): Promise<Blog>` – получение информации о блоге по ID  
+
+2. `getWiki(itemId: Safe<string>): Promise<Item>` – получение информации о вики-статье  
+
+3. `blog(builder: BlogBuilder): Promise<Blog>` – создание нового блога  
+
+4. `wiki(builder: WikiBuilder): Promise<Item>` – создание новой вики-статьи  
+
+5. `deleteBlog(blogId: Safe<string>): Promise<BasicResponse>` – удаление блога (только автор или админ)  
+
+6. `deleteWiki(itemId: Safe<string>): Promise<BasicResponse>` – удаление вики (только автор или лидер)  
+
+7. `userBlogs(userId: Safe<string>, startSize: StartSize = { start: 0, size: 25 }): Promise<Blog[]>` – блоги пользователя  
+
+8. `userWikis(userId: Safe<string>, startSize: StartSize = { start: 0, size: 25 }): Promise<Item[]>` – вики пользователя  
+
+9. `manyBlogs(startSize: StartSize = { start: 0, size: 25 }): Promise<PublicBlogsResponse>` – список последних блогов сообщества  
+
+10. `pagedBlogs(pageToken: Safe<string>, size: Safe<number> = 25): Promise<PublicBlogsResponse>` – постраничная загрузка блогов  
+
+11. `sendComment(objectId: Safe<string>, postType: Safe<PostType>, content: Safe<string>, respondTo?: Safe<string>): Promise<BasicResponse>` – комментарий к блогу или вики  
+
+12. `likeManyBlogs(blogIds: Safe<string[]>): Promise<BasicResponse>` – массовые лайки блогов  
+
+### 7. `ThreadManager`
+Менеджер для работы с чатами
+
+#### Методы ThreadManager
+
+1. `get(threadId: Safe<string>): Promise<Thread>` – информация о чате  
+
+2. `getMany(startSize: StartSize = { start: 0, size: 25 }): Promise<Thread[]>` – список чатов, где состоит пользователь  
+
+3. `getManyPublic(startSize: StartSize = { start: 0, size: 25 }, threadType: ThreadType = 'recommended'): Promise<Thread[]>` – публичные чаты (рекомендованные, трендовые и др.)  
+
+4. `join(threadId: Safe<string>): Promise<BasicResponse>` – вступление в чат  
+
+5. `leave(threadId: Safe<string>): Promise<BasicResponse>` – выход из чата  
+
+6. `create(builder: CreateThreadBuilder): Promise<Thread>` – создание нового чата  
+
+7. `edit(threadId: Safe<string>, builder: EditThreadBuilder): Promise<Thread>` – редактирование чата  
+
+8. `setBackground(threadId: Safe<string>, url: Safe<string>): Promise<BasicResponse>` – установка фона чата  
+
+9. `addCoHosts(threadId: Safe<string>, coHosts: Safe<string[]>): Promise<BasicResponse>` – назначение соведущих  
+
+10. `setViewOnly(threadId: Safe<string>, status: Status): Promise<BasicResponse>` – включение режима «только просмотр»  
+
+11. `setCanInvite(threadId: Safe<string>, status: Status): Promise<BasicResponse>` – разрешить/запретить приглашения  
+
+12. `setCanTip(threadId: Safe<string>, status: Status): Promise<BasicResponse>` – включить/выключить отправку монет  
+
+13. `invite(threadId: Safe<string>, userIds: Safe<string[]>): Promise<BasicResponse>` – приглашение пользователей в чат  
+
+14. `messages(threadId: Safe<string>, size: Safe<number> = 25): Promise<MessagesResponse>` – последние сообщения  
+
+15. `pagedMessages(threadId: Safe<string>, pageToken: Safe<string>, size: Safe<number> = 25): Promise<MessagesResponse>` – постраничная загрузка сообщений  
+
+16. `sendMessage(threadId: Safe<string>, content: Safe<string>, settings: MessageSettings = { messageType: 0 }): Promise<BasicResponse>` – отправка текстового сообщения  
+
+17. `sendEmbed(threadId: Safe<string>, content: Safe<string>, embed: Embed, settings: MessageSettings = { messageType: 0 }): Promise<BasicResponse>` – сообщение с embed  
+
+18. `sendLinkSnippet(threadId: Safe<string>, content: Safe<string>, linkSnippet: LinkSnippet, settings: MessageSettings = { messageType: 0 }): Promise<BasicResponse>` – сообщение с предпросмотром ссылки  
+
+19. `sendImage(threadId: Safe<string>, file: Safe<Buffer>): Promise<BasicResponse>` – отправка изображения  
+
+20. `sendAudio(threadId: Safe<string>, file: Safe<Buffer>): Promise<BasicResponse>` – отправка аудио/голосового сообщения  
+
+21. `deleteMessage(threadId: Safe<string>, messageId: Safe<string>): Promise<BasicResponse>` – удаление сообщения  
+
+22. `transferHost(threadId: Safe<string>, userIds: Safe<string[]>): Promise<BasicResponse>` – передача хоста  
+
+23. `acceptHost(threadId: Safe<string>, requestId: Safe<string>): Promise<BasicResponse>` – принятие хоста  
+
+24. `inviteToVoice(threadId: Safe<string>, userId: Safe<string>): Promise<BasicResponse>` – приглашение в голосовой чат  
+
+### 8. `AdminManager`
+Менеджер для администрирования сообществ
+
+#### Методы AdminManager
+
+1. `ban(userId: Safe<string>, reason?: Safe<string>): Promise<BasicResponse>` – бан пользователя  
+
+2. `unban(userId: Safe<string>, reason?: Safe<string>): Promise<BasicResponse>` – снятие бана  
+
+3. `hideUser(userId: Safe<string>, reason?: Safe<string>): Promise<BasicResponse>` – скрыть профиль (теневой бан)  
+
+4. `unhideUser(userId: Safe<string>, reason?: Safe<string>): Promise<BasicResponse>` – восстановить профиль  
+
+5. `hideThread(threadId: Safe<string>, reason?: Safe<string>): Promise<BasicResponse>` – скрыть чат  
+
+6. `unhideThread(threadId: Safe<string>, reason?: Safe<string>): Promise<BasicResponse>` – восстановить чат  
+
+7. `hidePost(objectId: Safe<string>, postType: PostType, reason?: Safe<string>): Promise<BasicResponse>` – скрыть блог/вики  
+
+8. `unhidePost(objectId: Safe<string>, postType: PostType, reason?: Safe<string>): Promise<BasicResponse>` – восстановить блог/вики  
+
+9. `addFeature(userId: Safe<string>, days: FeatureDuration = 1): Promise<BasicResponse>` – выделить пользователя в списке лидеров  
+
+10. `deleteFeature(userId: Safe<string>): Promise<BasicResponse>` – убрать из списка лидеров  
+
+11. `manageTitles(userId: Safe<string>, titles: Safe<CustomTitle[]>): Promise<BasicResponse>` – задать кастомные тайтлы и цвета  
+
+12. `warn(userId: Safe<string>, title: Safe<string>, content: Safe<string>): Promise<BasicResponse>` – отправить предупреждение  
+
+13. `strike(userId: Safe<string>, title: Safe<string>, content: Safe<string>, duration: Safe<number> = 86400): Promise<BasicResponse>` – выдать страйк с ограничением на время  
+
+### 9. `ACMManager`
+Менеджер для управления сообществом (ACM)
+
+#### Методы ACMManager
+
+1. `setEndpoint(enpoint: Safe<string>): Promise<BasicResponse>` – смена адреса сообщества  
+
+2. `icon(icon: Safe<string>, width: Safe<number>, height: Safe<number>): Promise<BasicResponse>` – смена иконки сообщества  
+
+3. `media(media: Safe<string>): Promise<BasicResponse>` – смена баннера  
+
+4. `name(name: Safe<string>): Promise<BasicResponse>` – смена названия  
+
+5. `tagline(tagline: Safe<string>): Promise<BasicResponse>` – смена короткого описания  
+
+6. `content(content: Safe<string>): Promise<BasicResponse>` – смена полного описания  
+
+7. `giveCuratorship(userId: Safe<string>): Promise<BasicResponse>` – назначение куратора  
+
+8. `giveLeadership(userId: Safe<string>): Promise<BasicResponse>` – назначение лидера  
+
+### 10. `SocketsWorkflow`
+Класс для работы с сокетами и обработки событий
+
+#### Методы SocketsWorkflow
+
+1. `open(callback: () => void): void` – обработчик при успешном подключении  
+
+2. `error(callback: (error: Error) => void): void` – обработчик ошибок  
+
+3. `close(callback: (code: number) => void): void` – обработчик закрытия соединения  
+
+4. `on<T extends EventName>(eventName: T, callback: (ndc: AminoDorks, data: EventMap[T]) => Promise<void>): void` – подписка на событие  
+
+5. `command(commandName: Safe<string>, callback: CommandCallback): void` – слушатель команды по префиксу  
+
+6. `commandArgs(commandName: Safe<string>, callback: CommandArgsCallback): void` – слушатель команды с аргументами  
+
+7. `send(data: WebSocket.Data): void` – отправка данных через сокет  
+
+8. `joinVoiceThread(ndcId: number, threadId: string): Promise<void>` – присоединение к голосовому чату  
+
+9. `joinVideoThread(ndcId: number, threadId: string): Promise<void>` – присоединение к видеочату  
+
+10. `joinVideoThreadAsViewer(ndcId: number, threadId: string): Promise<void>` – присоединение как зритель  
+
+11. `startVoiceChat(ndcId: number, threadId: string): Promise<void>` – запуск голосового чата  
+
+12. `endVoiceChat(ndcId: number, threadId: string): Promise<void>` – завершение голосового чата  
+
+13. `sendTyping(ndcId: number, threadId: string): Promise<void>` – отправка индикатора «печатает»  
+
+14. `sendRecording(ndcId: Safe<number>, threadId: Safe<string>): void` – отправка индикатора «записывает аудио»  
+
+15. `sendEndRecording(ndcId: Safe<number>, threadId: Safe<string>, duration: Safe<number>): void` – завершение записи аудио  
+
+## Участие в разработке
+
+Приветствуются любые улучшения! Пожалуйста, отправляйте pull request со своими изменениями.
+
+## Лицензия
+
+AminoDorksTS распространяется по лицензии MIT. См. LICENSE для подробностей.
+Если вы используете мои генераторы – напишите мне в [личку](https://t.me/celt_is_god).

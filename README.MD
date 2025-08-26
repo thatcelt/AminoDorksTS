@@ -31,6 +31,7 @@ AminoDorks contains a many features as a library for AminoApps, for example
 * Non-limited requests rate limit for signatures generation
 * Huge priority for creating user bots for stressing
 * Supporting of so much types with API interacting
+* Huge cache system for your accounts
 * [Fully open source code of server-side](https://github.com/thatcelt/dorks_api)
 
 ## Getting Started
@@ -50,7 +51,7 @@ To get started with AminoDorks, follow these steps:
 ```typescript
 import { AminoDorks } from 'amino.dorks';
 
-const main = async () => {
+(async () => {
     const aminoDorks = new AminoDorks({
         apiKey: 'API_KEY',
         context: {
@@ -59,9 +60,7 @@ const main = async () => {
     });
     const response = await aminoDorks.security.login('email@example.com', 'password');
     console.log(`Logged in ${response.userProfile.nickname}`);
-};
-
-main();
+})();
 ```
 
 ### Actions in other communities
@@ -69,7 +68,7 @@ main();
 ```typescript
 import { AminoDorks } from 'amino.dorks';
 
-const main = async () => {
+(async () => {
     const aminoDorks = new AminoDorks({
         apiKey: 'API_KEY',
         context: {
@@ -80,193 +79,351 @@ const main = async () => {
     
     const ndc = aminoDorks.as('NDC_ID') // now we can use this instance for interacting with community
     await ndc.playLottery() // for example, for play lottery to get some coins
-};
-
-main();
+})();
 ```
 
-## API Documentation (DEPRECATED)
+### Setup with websockets
+
+```typescript
+import { AminoDorks } from 'amino.dorks';
+import { MessageEvent } from 'amino.dorks/dist/schemas/sockets/sockets';
+
+(async () => {
+    const aminoDorks = new AminoDorks({
+        apiKey: 'API_KEY',
+        context: {
+            enviroment: 'global'
+        }
+    });
+    await aminoDorks.security.login('email@example.com', 'password');
+    
+    // setup on start of socket
+    aminoDorks.socket.on(async () => {
+        // do something
+    });
+
+    // setup on message
+    aminoDorks.socket.on('message', async (ndc: AminoDorks, message: MessageEvent ) => {
+        // do something
+    });
+})();
+```
+
+## Documentation
 -----------------
 
-### 1. `AminoDorks(apiKey: string)`
+### 1. `AminoDorks(config: AminoDorksConfig)`
 A main class to interacting with API in global namespace of app.
-* apiKey - special key to interact with our generators server. Getting from our [Telegram Bot](https://t.me/aminodorks_bot)
+config - configuration for library, you can find it in `AminoDorksConfig` type...
+`AminoDorksConfig` =>
+*    apiKey - API_KEY from [Telegram Bot](https://t.me/aminodorks_bot),
+*    context - context for library, you can find it in `EnviromentContext` type,
+*    ndcId - default ndc id, if you want to use another ndc id, you can use `as` method,
+*    enableLogging - enable logging for library, default value is `false`,
+*    deviceId - default device id,
+*    proxies - array of proxies, socks4 or socks5, default value is `[]`,
 
 #### AminoDorks Properties
 
-1. `AminoDorks.accountInfo: UserProfile` - Your user profile information after authorization
-2. `AminoDorks.aminodorksNDC: AminoDorksNDC` - Instance for interacting with community
+1. `AminoDorks.account: Account` - Your user profile information after authorization
+2. `AminoDorks.security: SecurityManager` - Manager for authorization methods and account information
+3. `AminoDorks.community: CommunityManager` - Manager for community methods
+4. `AminoDorks.wallet: WalletManager` - Manager for wallet methods
+5. `AminoDorks.user: UserManager` - Manager for user methods
+6. `AminoDorks.post: PostManager` - Manager for post methods
+7. `AminoDorks.thread: ThreadManager` - Manager for chat thread methods
+8. `AminoDorks.admin: AdminManager` - Manager for admin methods
+9. `AminoDorks.acm: ACMManager` - Manager for ACM methods
+10. `AminoDorks.socket: SocketWorkflow` - Manager for socket methods
 
 #### AminoDorks Methods
 
-1. `setNdcId(ndcId: number): AminoDorksNDC` - Set ndc id to interact with community, returns client for it
+1. `uploadMedia(file: Safe<Buffer>, type: Safe<MediaType>): Promise<UploadMediaResponse>` - Method for uploading media
 
-2. `uploadMedia(file: Buffer): UploadMediaResponse` - Method for uploading media files to aminoapps server
+2. `getLinkResolution(link: string): Promise<LinkInfo>` - Method for getting link resolution
 
-3. `getLinkResolution(link: string): LinkResolutionResponse` - Method for getting link information
+3. `getCommunityResolution(link: Safe<string>): Promise<Community>` - Method for getting community resolution
 
-4. `authenticate(email: string, password: string): UserProfile` - Method for authorization
+4. `getElapsedRealtime(): Promise<string>` - Method for getting elapsed realtime. Needs for sockets
 
-5. `authenticateSession(sessionId: string, deviceId: string): UserProfile` - Method for authorization with session id
-
-6. `requestResetPassword(email: string): BasicResponse` - Method for requesting password reset
-
-7. `requestVerifyAccount(email: string): BasicResponse` - Method for requesting account verification
-
-8. `resetPassword(email: string, code: string, newPassword: string): BasicResponse` - Method for resetting password
-
-9. `verifyAccount(email: string, code: string): BasicResponse` - Method for verifying account
-
-10. `deleteAccount(password: string): BasicResponse` - Method for deleting account
-
-11. `getCommunities(start: number = 0, size: number = 25): Promise<GetCommunitiesResponse>` - Method for getting list of communities
-
-12. `searchCommunity(title: string): Promise<SearchCommunityResponse>` - Method for searching community by title
-
-13. `joinCommunity(ndcId: number): Promise<BasicResponse>` - Method for joining community
-
-14. `leaveCommunity(ndcId: number): Promise<BasicResponse>` - Method for leaving community
-
-15. `membershipRequest(ndcId: number, message?: string): Promise<BasicResponse>` - Method for requesting membership in community
-
-16. `changeAminoId(aminoId: string): Promise<BasicResponse>` - Method for changing amino id
-
-17. `getWalletInfo(): Promise<GlobalResponses.GetWalletInfoResponse>` - Method for getting wallet information
-
-18. `getWalletHistory(start: number = 0, size: number = 25): Promise<GetWalletHistoryResponse>` - Method for getting wallet history
-
-19. `getCommunnityOnLink(link: string): Promise<Community>` - Method for getting community by link
+5. `as(ndcId: number): AminoDorks` - Method for using another community
 
 -----------------
 
-### 2. `AminoDorksNDC(httpWorkflow: HttpWorkflow, accountInfo: UserProfile, ndcId: number)`
-AminoDorksNDC is a class for interacting with community. It has same methods as AminoDorks, but for specific community.
-* httpWorkflow - instance of HttpWorkflow class
-* accountInfo - user profile of your account
-* ndcId - community id
+### 2. `SecurityManager`
+Security manager for authorization methods and account information
 
-#### AminoDorksNDC Methods
+#### SecurityManager Methods
 
-1. `getInviteCodes(start: number = 0, size: number = 10): Promise<GetInviteCodesResponse>` - Method for getting invite codes
+1. `getAccount(): Promise<MayUndefined<User>>` - Method for getting account information
 
-2. `createInviteCode(duration: number = INVITE_CODE_DEFAULT_DURATION): Promise<InviteCode>` - Method for creating invite code
+2. `login(email: Safe<string>, password: Safe<string>, loginType: Safe<number> = 100): Promise<LoginResponse>` - Method for logging in
 
-3. `deleteInviteCode(invitationId: string): Promise<BasicResponse>` - Method for deleting invite code
+3. `loginPhone(phone: Safe<string>, password: Safe<string>, loginType: Safe<number> = 100): Promise<LoginResponse>` - Method for logging in with phone number
 
-4. `getInfluencers(): Promise<GetUserProfilesResponse>` - Method for getting influencers
+4. `loginWithSession(sessionId: Safe<string>, deviceId: Safe<string>): Promise<MayUndefined<BasicResponse>>` - Method for logging in with session id
 
-5. `createBlog(title: string, content: string, builder: BlogBuilder = { mediaList: [] }): Promise<GetCreateBlogResponse>` - Method for creating blog
+5. `register(token: Safe<string>, password: Safe<string>, nickname: Safe<string>, deviceId?: Safe<string>): Promise<BasicResponse>` - Method for registering account
 
-6. `createWiki(label: string, content: string, builder: WikiBuilder = { mediaList: [] }, keywords: string = SIGNATURE_STUB): Promise<GetCreateWikiResponse>` - Method for creating wiki
+6. `checkAccountExist(token: Safe<string>, deviceId?: Safe<string>): Promise<BasicResponse>` - Method for checking account existence
 
-7. `deleteBlog(blogId: string): Promise<BasicResponse>` - Method for deleting blog
+7. `requestSecurityValidation(email: Safe<string>): Promise<BasicResponse>` - Method for requesting security validation code
 
-8. `deleteWiki(itemId: string): Promise<BasicResponse>` - Method for deleting wiki
+8. `checkSecurityValidation(email: Safe<string>, code: Safe<string>): Promise<BasicResponse>` - Method for checking security validation code
 
-9. `playLottery(timezone: number = GLOBAL_TIMEZONE): Promise<PlayLotteryResponse>` - Method for playing lottery
+9. `updateEmail(builder: UpdateEmailBuilder): Promise<BasicResponse>` - Method for updating email
 
-10. `sendActivityTime(timers: Timer[], timezone: number = GLOBAL_TIMEZONE): Promise<BasicResponse>` - Method for sending activity time
+10. `deleteAccount(email: Safe<string>, password: Safe<string>): Promise<BasicResponse>` - Method for deleting account
 
-11. `setOnlineStatus(status: OnlineStatus, duration: number = 86400): Promise<BasicResponse>` - Method for setting online status
+11. `disconnectGoogle(password: Safe<string>): Promise<BasicResponse>` - Method for disconnecting Google account
 
-12. `getOnlineUsers(start: number = 0, size: number = 25): Promise<GetOnlineUsersResponse>` - Method for getting online users
+### 3. `CommunityManager`
+Community manager for community methods
 
-13. `getUserBlogs(userId: string, start: number = 0, size: number = 25): Promise<GetBlogsResponse>` - Method for getting user blogs
+#### CommunityManager Methods
 
-14. `getUserWikis(userId: string, start: number = 0, size: number = 25): Promise<GetWikisResponse>` - Method for getting user wikis
+1. `get(ndcId: Safe<number>): Promise<Community>` - Method for getting community information
 
-15. `getPublicChatThreads(start: number = 0, size: number = 25, type: ChatThreadTypes = 'recommended'): Promise<GetChatThreadsResponse>` - Method for getting public chat threads
+2. `getMany(startSize: StartSize = { start: 0, size: 25 }): Promise<Community[]>` - Method for getting communities information
 
-16. `getPublicBlogs(start: number = 0, size: number = 25): Promise<GetPublicBlogsResponse>` - Method for getting public blogs
+3. `search(title: Safe<string>): Promise<SearchCommunityResponse>` - Method for searching communities
 
-17. `getPublicBlogsPage(pageToken: string, size: number = 25): Promise<GetPublicBlogsResponse>` - Method for getting public blogs page
+4. `join(ndcId: Safe<number>): Promise<BasicResponse>` - Method for joining community
 
-18. `hideUser(userId: string, reason: string = SIGNATURE_STUB): Promise<BasicResponse>` - Method for hiding user
+5. `leave(ndcId: Safe<number>): Promise<BasicResponse>` - Method for leaving community
 
-19. `hideChatThread(threadId: string, reason: string = SIGNATURE_STUB): Promise<BasicResponse>` - Method for hiding chat thread
+6. `sendMembershipRequest(ndcId: Safe<number>, message?: Safe<string>): Promise<BasicResponse>` - Method for sending membership request
 
-20. `hidePost(objectId: string, postType: PostTypes, reason: string = SIGNATURE_STUB): Promise<BasicResponse>` - Method for hiding post
+7. `identifyInvitation(inviteCode: Safe<string>): Promise<IdentifyInvitationResponse>` - Method for identifying invitation
 
-21. `unhideUser(userId: string, reason: string = SIGNATURE_STUB): Promise<BasicResponse>` - Method for unhiding user
+8. `getInviteCodes(startSize: StartSize): Promise<InviteCode[]>` - Method for retrieving a list of active invite codes for the current community. Requires leader or curator permissions.
 
-22. `unhideChatThread(threadId: string, reason: string = SIGNATURE_STUB): Promise<BasicResponse>` - Method for unhiding chat thread
+9. `createInviteCode(duration: Safe<number> = INVITE_CODE_DEFAULT_DURATION): Promise<InviteCode>` - Method for creating a new invite code for the community. The `duration` parameter specifies the validity period in seconds (default defined by `INVITE_CODE_DEFAULT_DURATION`). Available only to community leaders and curators.
 
-23. `unhidePost(objectId: string, postType: PostTypes, reason: string = SIGNATURE_STUB): Promise<BasicResponse>` - Method for unhiding post
+10. `deleteInviteCode(invitationId: Safe<string>): Promise<BasicResponse>` - Method for deleting an existing invite code by its ID. Requires appropriate administrative privileges within the community.
 
-24. `banUser(userId: string, reason: string = SIGNATURE_STUB): Promise<BasicResponse>` - Method for banning user
+11. `status(online: Safe<boolean>, duration: Safe<number> = ONLINE_DEFAULT_DURATION): Promise<BasicResponse>` - Method for updating the user's online status in the community. Sets the user as online or offline for the specified duration (in seconds, default defined by `ONLINE_DEFAULT_DURATION`).
 
-25. `unbanUser(userId: string, reason: string = SIGNATURE_STUB): Promise<BasicResponse>` - Method for unbanning user
+12. `sendTimeChunks(timers: Timers): Promise<BasicResponse>` - Method for submitting user activity time chunks to the server for analytics and engagement tracking. Includes timezone information and supports batch sending of active time periods.
 
-### 3. `Implementary Methods`
-Methods for both classes `AminoDorks` and `AminoDorksNDC`
+### 3. `WalletManager`
+Wallet manager for wallet methods
 
-#### AminoDorks Methods
+#### WalletManager Methods
 
-1. `getUserInfo(userId: string): Promise<GetUserInfoResponse>` - Method for getting user info
+1. `get(): Promise<Wallet>` - Method for retrieving the current user's wallet information, including coin balance, amino balance, and transaction limits.
 
-2. `getChatThreads(start: number, size: number): Promise<GetChatThreadsResponse>` - Method for getting chat threads
+2. `history(startSize: StartSize = { start: 0, size: 25 }): Promise<Transaction[]>` - Method for fetching the user's coin transaction history. Returns a paginated list of transactions with details such as amount, type, and timestamp.
 
-3. `getChatThread(threadId: string): Promise<GetChatThreadResponse>` - Method for getting chat thread
+3. `tipCoinsBlog(coins: Safe<number>, blogId: Safe<number>): Promise<BasicResponse>` - Method for sending a coin tip to a blog post. The `coins` amount is deducted from the user's wallet, and a unique transaction ID is generated. Requires a valid `ndcId`.
 
-4. `getChatThreadUsers(threadId: string, start: number, size: number): Promise<GetChatThreadUsersResponse>` - Method for getting chat thread users
+4. `tipCoinsChatThread(coins: Safe<number>, threadId: Safe<number>): Promise<BasicResponse>` - Method for sending a coin tip in a chat thread. Tips are used to show appreciation to chat members. Requires a valid `ndcId`.
 
-5. `joinChatThread(threadId: string): Promise<BasicResponse>` - Method for joining chat thread
+5. `playLottery(): Promise<BasicResponse>` - Method for participating in the daily lottery. Can be used once per day and may reward the user with coins. Requires a valid `ndcId` and community context.
 
-6. `leaveChatThread(threadId: string): Promise<BasicResponse>` - Method for leaving chat thread
+6. `purchaseFrame(frameId: Safe<string>): Promise<BasicResponse>` - Method for purchasing a profile frame using coins. The `frameId` corresponds to the frame's ID in the store. The purchase is made from the user's main wallet balance.
 
-7. `createChatThread(startMessage: string, chatThreadSettings: ChatThreadSettings): Promise<GetChatThreadResponse>` - Method for creating chat thread
+### 4. `UserManager`
+User manager for user methods
 
-8. `inviteToChatThread(threadId: string, userIds: string[]): Promise<BasicResponse>` - Method for inviting to chat thread
+#### UserManager Methods
 
-9. `kickFromChatThread(threadId: string, userId: string, allowRejoin: boolean): Promise<BasicResponse>` - Method for kicking from chat thread
+1. `get(userId: Safe<string>): Promise<User>` - Method for retrieving detailed profile information of a specific user by their user ID.
 
-10. `getChatThreadMessages(threadId: string, size: number): Promise<BasicResponse>` - Method for getting chat thread messages
+2. `getMany(startSize: StartSize = { start: 0, size: 50 }, usersType: UsersType = 'recent'): Promise<User[]>` - Method for fetching a list of users within the current community, filtered by type (e.g., recent, banned, leaders). Supports pagination via `startSize`.
 
-11. `getChatThreadMessagesPage(threadId: string, size: number, pageToken: string): Promise<BasicResponse>` - Method for getting chat thread messages page
+3. `getInOnline(startSize: StartSize = { start: 0, size: 50 }): Promise<User[]>` - Method for retrieving users currently online in the community. Requires a valid `ndcId` to identify the community.
 
-12. `getUserFollowing(followingArguments: FollowingArguments): Promise<GetUserProfilesResponse>` - Method for getting user following
+4. `getThreadUsers(threadId: Safe<string>, startSize: StartSize = { start: 0, size: 100 }): Promise<User[]>` - Method for fetching the list of users (members) in a specific chat thread. Returns a paginated list of user profiles.
 
-13. `getUserFollowers(followingArguments: FollowingArguments): Promise<BasicResponse>` - Method for getting user followers
+5. `edit(builder: EditProfileBuilder): Promise<BasicResponse>` - Method for editing the current user's profile using an `EditProfileBuilder`. Allows updating nickname, avatar, bio, background media, and background color.
 
-14. `getBlogInfo(blogId: string): Promise<GetCreateBlogResponse>` - Method for getting blog info
+6. `applyFrame(frameId: Safe<string>, applyToAll: Safe<boolean> = false): Promise<BasicResponse>` - Method for applying a purchased avatar frame to the user’s profile. If `applyToAll` is true, the frame will be applied across all communities.
 
-15. `getWikiInfo(itemId: string): Promise<GetCreateWikiResponse>` - Method for getting wiki info
+7. `kick(userId: Safe<string>, threadId: Safe<string>, allowRejoin: Safe<boolean> = false): Promise<BasicResponse>` - Method for removing a user from a chat thread. The `allowRejoin` flag determines whether the user can rejoin the thread without an invite.
 
-16. `getWallComments(userId: string, sorting: CommentsSorting, start: number, size: number): Promise<GetCommentsResponse>` - Method for getting wall comments
+8. `getFollowing(userId: Safe<string>, startSize: StartSize = { start: 0, size: 25 }): Promise<User[]>` - Method for retrieving the list of users that the specified user is following.
 
-17. `sendMessage(threadId: string, content: string, messageType: MessageTypes, messageSettings?: MessageSettings): Promise<SendMessageResponse>` - Method for sending message
+9. `getFollowers(userId: Safe<string>, startSize: StartSize = { start: 0, size: 25 }): Promise<User[]>` - Method for retrieving the list of users following the specified user.
 
-18. `sendEmbededMessage(threadId: string, content: string, embed: Embed, messageSettings?: MessageSettings): Promise<SendMessageResponse>` - Method for sending embeded message
+10. `getWallComments(userId: Safe<string>, sorting: CommentsSorting = 'newest', startSize: StartSize = { start: 0, size: 25 }): Promise<Comment[]>` - Method for fetching comments posted on a user's wall.
 
-19. `sendSticker(threadId: string, stickerId: string): Promise<SendMessageResponse>` - Method for sending sticker
+11. `follow(userId: Safe<string>): Promise<BasicResponse>` - Method for following a user. Increases the follower count of the target user if successful.
 
-20. `sendImage(mediaArguments: MediaArguments): Promise<SendMessageResponse>` - Method for sending image
+12. `followMany(userIds: Safe<string[]>): Promise<BasicResponse>` - Method for following multiple users in a single request. Accepts an array of user IDs.
 
-21. `sendAudio(mediaArguments: MediaArguments): Promise<SendMessageResponse>` - Method for sending audio
+13. `unfollow(userId: Safe<string>): Promise<BasicResponse>` - Method for unfollowing a user. Removes the current user from the target user's followers list.
 
-22. `deleteMessage(threadId: string, messageId: string): Promise<BasicResponse>` - Method for deleting message
+14. `sendComment(userId: Safe<string>, content: Safe<string>, respondTo?: Safe<string>): Promise<BasicResponse>` - Method for posting a comment on a user's wall. Optionally, the comment can be a reply to another comment by providing the `respondTo` ID.
 
-23. `deleteMessageAsAdmin(threadId: string, messageId: string, reason: string): Promise<BasicResponse>` - Method for deleting message as admin
+### 5. `PostManager`
+Post manager for post methods
 
-24. `editChatThread(threadId: string, builder: EditChatThreadBuilder): Promise<GetChatThreadResponse>` - Method for editing chat thread
+#### PostManager Methods
 
-25. `setChatThreadBackground(threadId: string, background: string): Promise<BasicResponse>` - Method for setting chat thread background
+1. `getBlog(blogId: Safe<string>): Promise<Blog>` - Method for retrieving detailed information about a specific blog post by its ID, including content, author, and metadata.
 
-26. `addCoHosts(threadId: string, userIds: string[]): Promise<BasicResponse>` - Method for adding co-hosts
+2. `getWiki(itemId: Safe<string>): Promise<Item>` - Method for retrieving a specific wiki item (knowledge base article) by its ID, including title, content, icon, and associated media.
 
-27. `setViewOnly(editingArguments: EditChatArguments): Promise<BasicResponse>` - Method for setting view only
+3. `blog(builder: BlogBuilder): Promise<Blog>` - Method for creating a new blog post in the current community. The post is built using a `BlogBuilder` and may include text, media, background color, and fans-only visibility.
 
-28. `setCanInvite(editingArguments: EditChatArguments): Promise<BasicResponse>` - Method for setting can invite
+4. `wiki(builder: WikiBuilder): Promise<Item>` - Method for creating a new wiki item in the community. Supports rich content, keywords, media, and optional fans-only access.
 
-29. `setCanTip(editingArguments: EditChatArguments): Promise<BasicResponse>` - Method for setting can tip
+5. `deleteBlog(blogId: Safe<string>): Promise<BasicResponse>` - Method for deleting a blog post authored by the current user. Requires appropriate permissions.
 
-30. `tipCoinsBlog(coins: number, blogId: string): Promise<BasicResponse>` - Method for tipping coins blog
+6. `deleteWiki(itemId: Safe<string>): Promise<BasicResponse>` - Method for deleting a wiki item. Only allowed for the item owner or community leaders.
 
-31. `tipCoinsChatThread(coins: number, threadId: string): Promise<BasicResponse>` - Method for tipping coins chat thread
+7. `userBlogs(userId: Safe<string>, startSize: StartSize = { start: 0, size: 25 }): Promise<Blog[]>` - Method for fetching a list of blog posts created by a specific user. Supports pagination.
 
-32. `follow(userId: string): Promise<BasicResponse>` - Method for following
+8. `userWikis(userId: Safe<string>, startSize: StartSize = { start: 0, size: 25 }): Promise<Item[]>` - Method for retrieving all wiki items created by a specific user within the community.
 
-33. `followMultiple(userId: string[]): Promise<BasicResponse>` - Method for following multiple users
+9. `manyBlogs(startSize: StartSize = { start: 0, size: 25 }): Promise<PublicBlogsResponse>` - Method for fetching a paginated list of recent public blog posts from the community feed.
+
+10. `pagedBlogs(pageToken: Safe<string>, size: Safe<number> = 25): Promise<PublicBlogsResponse>` - Method for retrieving blog posts using a page token for cursor-based pagination. Used for infinite scroll and feed navigation.
+
+11. `sendComment(objectId: Safe<string>, postType: Safe<PostType>, content: Safe<string>, respondTo?: Safe<string>): Promise<BasicResponse>` - Method for posting a comment on a blog or wiki. The `postType` specifies the content type (e.g., blog, item). Optionally reply to an existing comment via `respondTo`.
+
+12. `likeManyBlogs(blogIds: Safe<string[]>): Promise<BasicResponse>` - Method for liking multiple blog posts in a single request. Each like contributes to the post's engagement count.
+
+### 6. `ThreadManager`
+Thread manager for thread methods
+
+#### ThreadManager Methods
+
+1. `get(threadId: Safe<string>): Promise<Thread>` - Method for retrieving detailed information about a specific chat thread by its ID, including title, members, and settings.
+
+2. `getMany(startSize: StartSize = { start: 0, size: 25 }): Promise<Thread[]>` - Method for fetching a list of chat threads the current user is a member of. Supports pagination.
+
+3. `getManyPublic(startSize: StartSize = { start: 0, size: 25 }, threadType: ThreadType = 'recommended'): Promise<Thread[]>` - Method for retrieving public chat threads in the community, filtered by type (e.g., recommended, trending). Supports pagination.
+
+4. `join(threadId: Safe<string>): Promise<BasicResponse>` - Method for joining an open chat thread. Requires no invitation for public threads.
+
+5. `leave(threadId: Safe<string>): Promise<BasicResponse>` - Method for leaving a chat thread. Removes the user from the member list.
+
+6. `create(builder: CreateThreadBuilder): Promise<Thread>` - Method for creating a new chat thread. The builder configures parameters such as title, members, and visibility.
+
+7. `edit(threadId: Safe<string>, builder: EditThreadBuilder): Promise<Thread>` - Method for editing chat thread properties including title, content, icon, keywords, and announcement settings.
+
+8. `setBackground(threadId: Safe<string>, url: Safe<string>): Promise<BasicResponse>` - Method for setting a custom background image for the chat thread for the current user.
+
+9. `addCoHosts(threadId: Safe<string>, coHosts: Safe<string[]>): Promise<BasicResponse>` - Method for promoting one or more members to co-hosts, granting them moderation privileges in the thread.
+
+10. `setViewOnly(threadId: Safe<string>, status: Status): Promise<BasicResponse>` - Method for enabling or disabling view-only mode in the chat. When enabled, only hosts and co-hosts can send messages.
+
+11. `setCanInvite(threadId: Safe<string>, status: Status): Promise<BasicResponse>` - Method for allowing or restricting members from inviting others to the chat.
+
+12. `setCanTip(threadId: Safe<string>, status: Status): Promise<BasicResponse>` - Method for enabling or disabling the ability for members to send coin tips in the chat.
+
+13. `invite(threadId: Safe<string>, userIds: Safe<string[]>): Promise<BasicResponse>` - Method for inviting users to join a chat thread. Requires appropriate permissions.
+
+14. `messages(threadId: Safe<string>, size: Safe<number> = 25): Promise<MessagesResponse>` - Method for retrieving the latest messages from a chat thread using size-based pagination.
+
+15. `pagedMessages(threadId: Safe<string>, pageToken: Safe<string>, size: Safe<number> = 25): Promise<MessagesResponse>` - Method for retrieving older messages using a page token for cursor-based navigation (e.g., infinite scroll).
+
+16. `sendMessage(threadId: Safe<string>, content: Safe<string>, settings: MessageSettings = { messageType: 0 }): Promise<BasicResponse>` - Method for sending a plain text message to a chat. Supports replies, mentions, and custom message types.
+
+17. `sendEmbed(threadId: Safe<string>, content: Safe<string>, embed: Embed, settings: MessageSettings = { messageType: 0 }): Promise<BasicResponse>` - Method for sending a message with an embedded object. The embed displays a rich preview.
+
+18. `sendLinkSnippet(threadId: Safe<string>, content: Safe<string>, linkSnippet: LinkSnippet, settings: MessageSettings = { messageType: 0 }): Promise<BasicResponse>` - Method for sending a message with a link preview (title, image, description). The snippet is generated from the provided URL and media.
+
+19. `sendImage(threadId: Safe<string>, file: Safe<Buffer>): Promise<BasicResponse>` - Method for sending an image to the chat. The image must be provided as a Buffer and is encoded in base64.
+
+20. `sendAudio(threadId: Safe<string>, file: Safe<Buffer>): Promise<BasicResponse>` - Method for sending a voice message or audio clip to the chat. The audio file must be a Buffer and is sent in base64 format.
+
+21. `deleteMessage(threadId: Safe<string>, messageId: Safe<string>): Promise<BasicResponse>` - Method for deleting a message from the chat. Only available to the message author or thread hosts.
+
+22. `transferHost(threadId: Safe<string>, userIds: Safe<string[]>): Promise<BasicResponse>` - Method for initiating a host transfer to one or more users. The recipients must accept the request.
+
+23. `acceptHost(threadId: Safe<string>, requestId: Safe<string>): Promise<BasicResponse>` - Method for accepting a host transfer request in a chat thread.
+
+24. `inviteToVoice(threadId: Safe<string>, userId: Safe<string>): Promise<BasicResponse>` - Method for inviting a user to join the ongoing voice chat (AV chat) in the thread.
+
+### 7. `AdminManager`
+Admin manager for admin methods
+
+#### AdminManager Methods
+
+1. `ban(userId: Safe<string>, reason?: Safe<string>): Promise<BasicResponse>` - Method for banning a user from the community. An optional reason can be provided and will be visible in moderation logs.
+
+2. `unban(userId: Safe<string>, reason?: Safe<string>): Promise<BasicResponse>` - Method for lifting a ban from a user, allowing them to rejoin the community. An optional reason can be included.
+
+3. `hideUser(userId: Safe<string>, reason?: Safe<string>): Promise<BasicResponse>` - Method for hiding a user's profile and content from public view (shadowban). The user remains in the community but is restricted in visibility.
+
+4. `unhideUser(userId: Safe<string>, reason?: Safe<string>): Promise<BasicResponse>` - Method for restoring a hidden user's profile and content to public visibility.
+
+5. `hideThread(threadId: Safe<string>, reason?: Safe<string>): Promise<BasicResponse>` - Method for hiding a chat thread from public view. The thread becomes inaccessible to non-staff members.
+
+6. `unhideThread(threadId: Safe<string>, reason?: Safe<string>): Promise<BasicResponse>` - Method for unhiding a previously hidden chat thread, restoring its visibility to members.
+
+7. `hidePost(objectId: Safe<string>, postType: PostType, reason?: Safe<string>): Promise<BasicResponse>` - Method for hiding a blog or wiki post. The content is removed from public feeds but remains accessible to staff.
+
+8. `unhidePost(objectId: Safe<string>, postType: PostType, reason?: Safe<string>): Promise<BasicResponse>` - Method for unhiding a previously hidden blog or wiki post, restoring its public visibility.
+
+9. `addFeature(userId: Safe<string>, days: FeatureDuration = 1): Promise<BasicResponse>` - Method for featuring a user on the community's leader list for a specified number of days (default: 1). The duration is automatically converted to seconds.
+
+10. `deleteFeature(userId: Safe<string>): Promise<BasicResponse>` - Method for removing a user from the featured list, reverting their profile to non-featured status.
+
+11. `manageTitles(userId: Safe<string>, titles: Safe<CustomTitle[]>): Promise<BasicResponse>` - Method for assigning or updating custom titles and colors for a user. Accepts an array of title objects with label and color values.
+
+12. `warn(userId: Safe<string>, title: Safe<string>, content: Safe<string>): Promise<BasicResponse>` - Method for sending a warning notice to a user. The notice appears in their inbox and may include a title and detailed message.
+
+13. `strike(userId: Safe<string>, title: Safe<string>, content: Safe<string>, duration: Safe<number> = 86400): Promise<BasicResponse>` - Method for issuing a strike with a time-based penalty. The user may face restrictions (e.g., chat ban) for the specified duration in seconds (default: 24 hours).
+
+### 8. `ACMManager`
+Manager for ACM methods
+
+#### ACMManager Methods
+
+1. `setEndpoint(enpoint: Safe<string>): Promise<BasicResponse>` - Method for updating the community's endpoint (domain path). This changes the community's URL identifier. Requires full leadership privileges.
+
+2. `icon(icon: Safe<string>, width: Safe<number>, height: Safe<number>): Promise<BasicResponse>` - Method for changing the community's icon (logo). The image URL must be pre-uploaded, and dimensions must be specified to generate proper media credentials.
+
+3. `media(media: Safe<string>): Promise<BasicResponse>` - Method for setting or updating the community's promotional media (banner). The media URL should point to an uploaded image resource.
+
+4. `name(name: Safe<string>): Promise<BasicResponse>` - Method for renaming the community. Updates the displayed name visible to all members.
+
+5. `tagline(tagline: Safe<string>): Promise<BasicResponse>` - Method for setting or updating the community's tagline (short description) that appears under the name in community listings.
+
+6. `content(content: Safe<string>): Promise<BasicResponse>` - Method for updating the community's full description or about section. Supports rich text formatting where applicable.
+
+7. `giveCuratorship(userId: Safe<string>): Promise<BasicResponse>` - Method for granting curator status to a user. Curators have limited moderation powers but cannot change core community settings.
+
+8. `giveLeadership(userId: Safe<string>): Promise<BasicResponse>` - Method for promoting a user to community leader. Leaders have full administrative access, including the ability to manage staff, settings, and ownership.
+
+### 8. SocketsWorkflow
+Specified class for interacting with AminoDorks via Sockets and catching events and commands
+
+#### SocketsWorkflow Methods
+
+1. `open(callback: () => void): void` - Registers a callback function that executes when the WebSocket connection is successfully opened. Logs connection status.
+
+2. `error(callback: (error: Error) => void): void` - Registers a callback to handle WebSocket errors. The provided function is called with the error object whenever a connection or communication error occurs.
+
+3. `close(callback: (code: number) => void): void` - Registers a callback that triggers when the WebSocket connection is closed. Receives the close status code and logs the event.
+
+4. `on<T extends EventName>(eventName: T, callback: (ndc: AminoDorks, data: EventMap[T]) => Promise<void>): void` - Subscribes to a specific WebSocket event (e.g., `chat-message`, `user-join`). The callback is executed whenever the event is received, with parsed data.
+
+5. `command(commandName: Safe<string>, callback: CommandCallback): void` - Registers a command listener that triggers when a chat message starts with the specified command (e.g., `!help`). The callback receives the full message context.
+
+6. `commandArgs(commandName: Safe<string>, callback: CommandArgsCallback): void` - Registers a command listener that parses and splits the message content after the command into an array of arguments. Each argument is wrapped in an `ArgImpl` object for easy handling.
+
+7. `send(data: WebSocket.Data): void` - Sends raw data through the WebSocket connection. Logs the transmitted data for debugging purposes.
+
+8. `joinVoiceThread(ndcId: number, threadId: string): Promise<void>` - Sends a WebSocket request to join a voice chat in the specified thread as a participant.
+
+9. `joinVideoThread(ndcId: number, threadId: string): Promise<void>` - Sends a request to join a video chat in the specified thread with full participation rights.
+
+10. `joinVideoThreadAsViewer(ndcId: number, threadId: string): Promise<void>` - Joins a video chat as a viewer (non-participant), allowing the user to watch without audio/video transmission.
+
+11. `startVoiceChat(ndcId: number, threadId: string): Promise<void>` - Initiates a voice chat in the specified thread by joining the AV channel and starting the internal voice chat loop.
+
+12. `endVoiceChat(ndcId: number, threadId: string): Promise<void>` - Ends an active voice chat by sending a leave signal and removing the thread from the active voice chat list.
+
+13. `sendTyping(ndcId: number, threadId: string): Promise<void>` - Sends a "typing" indicator to the chat, simulating user input activity.
+
+14. `sendRecording(ndcId: Safe<number>, threadId: Safe<string>): void` - Sends a "recording" indicator to show that the user is recording a voice message.
+
+15. `sendEndRecording(ndcId: Safe<number>, threadId: Safe<string>, duration: Safe<number>): void` - Signals the end of a voice recording, including the duration of the recorded audio.
 
 ## Contributing
 ------------
