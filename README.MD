@@ -18,7 +18,7 @@
 * [Features](#features)
 * [Getting Started](#getting-started)
 * [Usage](#usage)
-* [API Documentation (DEPRECATED)](#api-documentation)
+* [API Documentation](#api-documentation)
 * [Contributing](#contributing)
 * [License](#license)
 
